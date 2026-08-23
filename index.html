@@ -116,6 +116,10 @@
         /* Fade In Utility */
         .fade-in { animation: fadeIn 0.8s ease forwards; opacity: 0; }
         @keyframes fadeIn { to { opacity: 1; } }
+
+        /* Modal Animation */
+        .modal-enter { animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
     </style>
 </head>
 <body class="antialiased flex flex-col min-h-screen">
@@ -192,7 +196,7 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="group cursor-pointer relative overflow-hidden h-[450px]" onclick="showSection('shop'); filterByCategory('Dresses', 'Dresses');">
-                            <img src="assets/images/dress3.png" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+                            <img src="https://images.unsplash.com/photo-1515347619152-c6bf2e99d251?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
                             <div class="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500"></div>
                             <div class="absolute bottom-8 left-8 right-8 text-center bg-white/95 backdrop-blur-sm py-4 transition-all transform translate-y-2 group-hover:translate-y-0 opacity-90 group-hover:opacity-100">
                                 <h3 class="font-serif text-lg uppercase tracking-widest text-primary">Dresses</h3>
@@ -206,7 +210,7 @@
                             </div>
                         </div>
                         <div class="group cursor-pointer relative overflow-hidden h-[450px]" onclick="showSection('shop'); filterByCategory('Kurtis', 'Kurtis');">
-                            <img src="assets/images/dress1.png" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+                            <img src="https://images.unsplash.com/photo-1583391733958-d15a883fa50b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
                             <div class="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500"></div>
                             <div class="absolute bottom-8 left-8 right-8 text-center bg-white/95 backdrop-blur-sm py-4 transition-all transform translate-y-2 group-hover:translate-y-0 opacity-90 group-hover:opacity-100">
                                 <h3 class="font-serif text-lg uppercase tracking-widest text-primary">Kurtis</h3>
@@ -251,6 +255,138 @@
                 <!-- Products Grid -->
                 <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
                     <!-- Injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Detail Section -->
+        <section id="product-detail-section" class="hidden py-16 fade-in">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <button onclick="showSection('shop')" class="text-[10px] font-bold uppercase tracking-widest text-textMuted hover:text-primary mb-8 flex items-center gap-2 transition-colors">
+                    <i class="ph-light ph-arrow-left text-lg"></i> Back to Collection
+                </button>
+                <div class="flex flex-col md:flex-row gap-12 lg:gap-20" id="product-detail-container">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <section id="admin-section" class="hidden py-16 bg-secondary min-h-[70vh] fade-in">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <!-- Admin Login Screen -->
+                <div id="admin-login-screen" class="max-w-md mx-auto bg-surface p-10 shadow-sm border border-borderLight relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+                    <div class="text-center mb-10">
+                        <i class="ph-light ph-shield-check text-4xl text-primary mb-4"></i>
+                        <h2 class="text-3xl font-serif text-primary">Admin Access</h2>
+                        <p class="text-textMuted mt-3 font-light text-sm">Secure portal for store management.</p>
+                    </div>
+                    <form onsubmit="handleAdminLogin(event)" class="space-y-6">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Admin Password</label>
+                            <input type="password" id="admin-password-input" class="elegant-input w-full px-4 py-3 text-sm" required>
+                        </div>
+                        <button type="submit" class="btn-primary bg-primary text-white w-full py-4 uppercase text-xs tracking-widest font-bold">
+                            <span>Enter Dashboard</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Admin Dashboard (Hidden by default) -->
+                <div id="admin-dashboard" class="hidden flex-col md:flex-row gap-8">
+                    
+                    <!-- Admin Sidebar -->
+                    <div class="w-full md:w-64 flex-shrink-0">
+                        <div class="mb-8">
+                            <i class="ph-light ph-shield-check text-4xl text-accent mb-2"></i>
+                            <h2 class="text-2xl font-serif text-primary">Store Admin</h2>
+                            <p class="text-[10px] text-textMuted uppercase tracking-widest font-bold mt-1">Management Portal</p>
+                        </div>
+                        
+                        <div class="bg-surface border border-borderLight flex flex-col">
+                            <button onclick="switchAdminTab('manage')" id="tab-btn-manage" class="text-left px-6 py-4 border-l-2 border-primary bg-secondary font-bold text-primary uppercase tracking-widest text-[10px] flex items-center justify-between transition-all">
+                                <span class="flex items-center gap-3"><i class="ph-light ph-squares-four text-lg"></i> Manage</span>
+                                <i class="ph-light ph-caret-right"></i>
+                            </button>
+                            <button onclick="switchAdminTab('add')" id="tab-btn-add" class="text-left px-6 py-4 border-l-2 border-transparent hover:bg-secondary font-bold text-textMuted uppercase tracking-widest text-[10px] flex items-center justify-between transition-all border-t border-borderLight">
+                                <span class="flex items-center gap-3"><i class="ph-light ph-plus text-lg"></i> Add / Edit Product</span>
+                                <i class="ph-light ph-caret-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Admin Content -->
+                    <div class="w-full flex-grow">
+                        
+                        <!-- Manage Products -->
+                        <div id="admin-tab-manage" class="bg-surface p-6 md:p-10 border border-borderLight fade-in">
+                            <h3 class="text-xl font-serif text-primary mb-6">Current Inventory</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-borderLight text-[10px] uppercase tracking-widest text-textMuted">
+                                            <th class="pb-3 font-bold">Product</th>
+                                            <th class="pb-3 font-bold">Category</th>
+                                            <th class="pb-3 font-bold">Price</th>
+                                            <th class="pb-3 font-bold text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-products-list">
+                                        <!-- Injected via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Add Product -->
+                        <div id="admin-tab-add" class="hidden bg-surface p-6 md:p-10 border border-borderLight fade-in">
+                            <h3 id="admin-form-title" class="text-xl font-serif text-primary mb-6">Add New Style</h3>
+                            <form id="add-product-form" onsubmit="handleNewProduct(event)" class="space-y-5">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Product Name</label>
+                                        <input type="text" id="new-prod-name" placeholder="e.g. Summer Maxi Dress" class="elegant-input w-full px-4 py-3 text-sm" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Category</label>
+                                        <select id="new-prod-cat" class="elegant-input w-full px-4 py-3 text-sm" required>
+                                            <option value="Dresses">Dresses</option>
+                                            <option value="Kurtis">Kurtis</option>
+                                            <option value="Co-ords">Co-ords</option>
+                                            <option value="Party Wear">Party Wear</option>
+                                            <option value="Tops">Tops</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- File Upload replacing URL -->
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Upload Product Image</label>
+                                    <input type="file" id="new-prod-image-file" accept="image/*" onchange="handleFileUpload(event)" class="elegant-input w-full px-4 py-3 text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-widest file:bg-primary file:text-white hover:file:bg-black/80 cursor-pointer">
+                                    
+                                    <!-- Image Preview -->
+                                    <div id="image-preview-container" class="mt-4 hidden h-32 w-24 border border-borderLight overflow-hidden relative">
+                                        <img id="image-preview" src="" class="w-full h-full object-cover">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Available Sizes (Comma separated)</label>
+                                    <input type="text" id="new-prod-sizes" placeholder="S, M, L, XL" class="elegant-input w-full px-4 py-3 text-sm" required>
+                                </div>
+                                <div class="pt-4 flex gap-4">
+                                    <button type="submit" id="admin-submit-btn" class="btn-primary bg-primary text-white px-8 py-3 uppercase text-xs tracking-widest font-bold">
+                                        <span>Publish Product</span>
+                                    </button>
+                                    <button type="button" onclick="resetAdminForm()" class="px-8 py-3 uppercase text-xs tracking-widest font-bold text-textMuted border border-borderLight hover:bg-secondary transition-colors">
+                                        Clear Form
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </section>
@@ -459,31 +595,112 @@
         </div>
     </footer>
 
-    <script>
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="fixed inset-0 bg-black/50 z-[60] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-surface p-8 max-w-md w-full shadow-2xl modal-enter border border-borderLight relative m-4">
+            <button onclick="closePaymentModal()" class="absolute top-4 right-4 text-textMuted hover:text-primary transition-colors">
+                <i class="ph-light ph-x text-2xl"></i>
+            </button>
+            <h3 class="text-2xl font-serif text-primary mb-2 text-center">Complete Payment</h3>
+            <p class="text-textMuted text-xs font-light text-center mb-6">Select a secure payment method below.</p>
+            
+            <div class="mb-6 bg-secondary p-4 border border-borderLight flex justify-between items-center">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-textMuted">Amount to Pay</span>
+                <span class="text-xl font-serif text-primary font-bold">₹<span id="payment-total">0</span></span>
+            </div>
+
+            <div class="space-y-4 mb-8">
+                <label class="block">
+                    <span class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Payment Method</span>
+                    <select id="payment-method-select" class="elegant-input w-full px-4 py-3 text-sm cursor-pointer">
+                        <option value="South Indian Bank (SIB) Gateway">South Indian Bank (SIB) Gateway</option>
+                        <option value="Merchant QR (UPI)">Scan Merchant QR (UPI)</option>
+                        <option value="Cash on Delivery">Cash on Delivery</option>
+                    </select>
+                </label>
+            </div>
+
+            <button id="confirm-pay-btn" onclick="confirmPayment()" class="btn-primary bg-primary text-white w-full py-4 uppercase text-xs tracking-widest font-bold flex justify-center items-center gap-3">
+                <span>Confirm & Pay</span>
+            </button>
+            
+            <div class="mt-4 text-center">
+                <span class="text-[9px] text-textMuted uppercase tracking-widest flex items-center justify-center gap-1"><i class="ph-light ph-lock"></i> Secure SSL Transaction</span>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // 1. PASTE YOUR FIREBASE CONFIG HERE
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMYpXQVShG_WIp-AP7SL8V6sN6P-IivRo",
+            authDomain: "hollywood-collections-94158.firebaseapp.com",
+            projectId: "hollywood-collections-94158",
+            storageBucket: "hollywood-collections-94158.firebasestorage.app",
+            messagingSenderId: "935761895040",
+            appId: "1:935761895040:web:db7db8431ddcf96d2dd065"
+        };
+        
+        let app, db, auth, userId = null;
+        const appId = "hollywood-collections-live"; // Unique database path identifier
+
+        // 2. SAFELY INITIALIZE FIREBASE
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch (e) {
+            console.error("Database init failed. Running in Local Memory Mode.", e);
+        }
+
+        // 3. BIND GLOBALS EARLY: Ensures all buttons work even if there are network issues
+        Object.assign(window, {
+            showSection, toggleCart, filterByCategory, toggleFilterDropdown, viewProduct,
+            selectDetailSize, changeDetailQty, addDetailToCart, updateQuantity,
+            processCheckout, closePaymentModal, confirmPayment, requestOTP, resetAuth, handleAuth,
+            logout, switchProfileTab, saveProfile, handleAdminLogin, switchAdminTab,
+            deleteProduct, handleFileUpload, editProduct, resetAdminForm, handleNewProduct
+        });
+
         // --- 1. DATA STRUCTURE ---
         const PRICE_CONSTANT = 500;
-        const products = [
-            { id: 1, name: 'Classic Floral Dress', category: 'Dresses', image: 'assets/images/dress1.png', sizes: ['S', 'M', 'L'] },
-            { id: 2, name: 'Elegant Printed Kurti', category: 'Kurtis', image: 'assets/images/dress2.png', sizes: ['M', 'L', 'XL'] },
+        const INITIAL_PRODUCTS = [
+            { id: 1, name: 'Classic Floral Dress', category: 'Dresses', image: 'https://images.unsplash.com/photo-1515347619152-c6bf2e99d251?q=80&w=1000', sizes: ['S', 'M', 'L'] },
+            { id: 2, name: 'Elegant Printed Kurti', category: 'Kurtis', image: 'https://images.unsplash.com/photo-1583391733958-d15a883fa50b?q=80&w=1000', sizes: ['M', 'L', 'XL'] },
             { id: 3, name: 'Premium Co-ord Set', category: 'Co-ords', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000', sizes: ['XS', 'S', 'M'] },
             { id: 4, name: 'Minimal Party Dress', category: 'Party Wear', image: 'https://images.unsplash.com/photo-1566206091558-7f218b696731?q=80&w=1000', sizes: ['S', 'M', 'L'] },
             { id: 5, name: 'Cotton Summer Top', category: 'Tops', image: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=1000', sizes: ['S', 'M', 'L', 'XL'] },
             { id: 6, name: 'Midnight Velvet Dress', category: 'Party Wear', image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=1000', sizes: ['S', 'M'] },
-            { id: 7, name: 'Beige Lounge Set', category: 'Co-ords', image: 'assets/images/dress3.png', sizes: ['M', 'L'] },
-            { id: 8, name: 'Embroidered Tunic', category: 'Kurtis', image: 'assets/images/dress4.png', sizes: ['L', 'XL', 'XXL'] }
+            { id: 7, name: 'Beige Lounge Set', category: 'Co-ords', image: 'https://images.unsplash.com/photo-1434389678369-10825eb6e55f?q=80&w=1000', sizes: ['M', 'L'] },
+            { id: 8, name: 'Embroidered Tunic', category: 'Kurtis', image: 'https://images.unsplash.com/photo-1608228068778-43952fdb4462?q=80&w=1000', sizes: ['L', 'XL', 'XXL'] }
         ];
 
+        let products = [...INITIAL_PRODUCTS]; // Fallback until db loads
         let cart = [];
         let isCartOpen = false;
         let currentUser = null; 
         let currentFilter = 'all';
+        let selectedDetailSize = null;
+        let detailQty = 1;
 
         // --- 2. INITIALIZATION ---
-        window.onload = () => {
+        async function initApp() {
             loadInitialState();
-            renderProducts();
             
-            // Close dropdown when clicking outside
+            if (window.location.hash === '#admin') showSection('admin');
+            else renderProducts();
+            
+            window.addEventListener('hashchange', () => {
+                if (window.location.hash === '#admin') showSection('admin');
+                else if (window.location.hash === '') showSection('home');
+            });
+            
             document.addEventListener('click', (e) => {
                 const container = document.getElementById('custom-filter-container');
                 const dropdown = document.getElementById('filter-dropdown');
@@ -491,7 +708,80 @@
                     toggleFilterDropdown();
                 }
             });
-        };
+
+            // Initialize Cloud DB Connect Safely
+            if (app && auth && db) {
+                try {
+                    const userCred = await signInAnonymously(auth);
+                    userId = userCred.user.uid;
+                    setupRealtimeSync();
+                } catch (error) {
+                    console.error("Database connection failed:", error);
+                }
+            }
+        }
+
+        // Run immediately or when DOM is ready to prevent script deferral bugs
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+
+        function setupRealtimeSync() {
+            if (!userId) return;
+
+            // Sync Inventory / Products
+            const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+            onSnapshot(productsRef, async (snapshot) => {
+                if (snapshot.empty) {
+                    for (const p of INITIAL_PRODUCTS) {
+                        await addDoc(productsRef, p);
+                    }
+                } else {
+                    products = [];
+                    snapshot.forEach(doc => {
+                        products.push({ dbId: doc.id, ...doc.data() });
+                    });
+                    
+                    products.sort((a,b) => b.id - a.id); // Newest first
+                    
+                    if(document.getElementById('shop-section').style.display === 'block' && currentFilter === 'all') {
+                        renderProducts();
+                    } else if (document.getElementById('shop-section').style.display === 'block') {
+                        filterByCategory(currentFilter, document.getElementById('filter-selected-text').textContent);
+                    }
+                    if (isAdminLoggedIn) renderAdminProducts();
+                }
+            }, (err) => console.error(err));
+
+            // Sync User Profile
+            const profileRef = doc(db, 'artifacts', appId, 'users', userId, 'profile', 'details');
+            onSnapshot(profileRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    currentUser = { ...currentUser, ...data };
+                    localStorage.setItem('hc_user', JSON.stringify(currentUser));
+                    if(currentUser && currentUser.phone) {
+                        updateAuthUI();
+                        if(document.getElementById('account-section').style.display === 'block') renderAccountSection();
+                    }
+                }
+            }, (err) => console.error(err));
+
+            // Sync Orders History
+            const ordersRef = collection(db, 'artifacts', appId, 'users', userId, 'orders');
+            onSnapshot(ordersRef, (snapshot) => {
+                const fetchedOrders = [];
+                snapshot.forEach(doc => fetchedOrders.push({ dbId: doc.id, ...doc.data() }));
+                fetchedOrders.sort((a,b) => b.timestamp - a.timestamp);
+                
+                if(currentUser) {
+                    currentUser.orders = fetchedOrders;
+                    if(document.getElementById('account-section').style.display === 'block') renderOrders();
+                }
+            }, (err) => console.error(err));
+        }
 
         function loadInitialState() {
             const savedCart = localStorage.getItem('hc_cart');
@@ -506,8 +796,6 @@
         }
 
         // --- 3. CUSTOM UI COMPONENTS ---
-        
-        // Premium Toast Notification
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -524,7 +812,6 @@
             }
 
             toast.className = `toast-enter ${bgStyle} px-5 py-4 shadow-[0_10px_40px_rgba(0,0,0,0.08)] border flex items-center gap-4 min-w-[300px] pointer-events-auto relative overflow-hidden`;
-            
             toast.innerHTML = `
                 <div class="flex-shrink-0">${icon}</div>
                 <div class="font-bold text-[10px] uppercase tracking-widest text-primary flex-1 mt-0.5">${message}</div>
@@ -534,7 +821,6 @@
                 <div class="absolute bottom-0 left-0 h-0.5 bg-accent w-full" style="animation: shrink 3s linear forwards;"></div>
             `;
             
-            // Add progress bar animation keyframes dynamically if not present
             if(!document.getElementById('toast-styles')) {
                 const style = document.createElement('style');
                 style.id = 'toast-styles';
@@ -548,22 +834,16 @@
                 if (toast.parentElement) {
                     toast.classList.remove('toast-enter');
                     toast.classList.add('toast-exit');
-                    setTimeout(() => toast.remove(), 400); // Wait for exit animation
+                    setTimeout(() => toast.remove(), 400);
                 }
             }, 3000);
         }
 
-        // Custom Dropdown Filter
         function toggleFilterDropdown() {
             const dropdown = document.getElementById('filter-dropdown');
             const caret = document.getElementById('filter-caret');
-            
             dropdown.classList.toggle('active');
-            if(dropdown.classList.contains('active')) {
-                caret.style.transform = 'rotate(180deg)';
-            } else {
-                caret.style.transform = 'rotate(0deg)';
-            }
+            caret.style.transform = dropdown.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0deg)';
         }
 
         function filterByCategory(catValue, catText) {
@@ -573,20 +853,27 @@
             renderProducts();
         }
 
-        // Navigation
         function showSection(sectionId) {
-            document.getElementById('home-section').style.display = 'none';
-            document.getElementById('shop-section').style.display = 'none';
-            document.getElementById('account-section').style.display = 'none';
+            ['home-section', 'shop-section', 'account-section', 'product-detail-section', 'admin-section'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
 
             if (sectionId === 'home') document.getElementById('home-section').style.display = 'block';
             if (sectionId === 'shop') {
                 document.getElementById('shop-section').style.display = 'block';
-                if(currentFilter === 'all') renderProducts(); // Ensure products render
+                if(currentFilter === 'all') renderProducts();
             }
             if (sectionId === 'account') {
                 document.getElementById('account-section').style.display = 'block';
                 renderAccountSection();
+            }
+            if (sectionId === 'product-detail') document.getElementById('product-detail-section').style.display = 'block';
+            if (sectionId === 'admin') {
+                document.getElementById('admin-section').style.display = 'block';
+                if (isAdminLoggedIn) renderAdminProducts();
+                window.location.hash = 'admin';
+            } else {
+                if(window.location.hash === '#admin') history.pushState("", document.title, window.location.pathname + window.location.search);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -595,10 +882,7 @@
         function renderProducts() {
             const grid = document.getElementById('products-grid');
             grid.innerHTML = '';
-            
-            const filteredProducts = currentFilter === 'all' 
-                ? products 
-                : products.filter(p => p.category === currentFilter);
+            const filteredProducts = currentFilter === 'all' ? products : products.filter(p => p.category === currentFilter);
 
             if (filteredProducts.length === 0) {
                 grid.innerHTML = '<div class="col-span-full text-center py-20 text-textMuted font-light text-sm"><i class="ph-light ph-magnifying-glass text-4xl mb-4 opacity-50 block"></i>No styles found in this category.</div>';
@@ -606,29 +890,106 @@
             }
 
             filteredProducts.forEach(product => {
-                const defaultSize = product.sizes[0];
-                
-                const card = `
-                    <div class="product-card group fade-in">
-                        <div class="relative bg-secondary overflow-hidden img-hover-zoom mb-5 cursor-pointer h-[420px]">
+                grid.innerHTML += `
+                    <div class="product-card group fade-in cursor-pointer" onclick="viewProduct(${product.id})">
+                        <div class="relative bg-secondary overflow-hidden img-hover-zoom mb-5 h-[420px]">
                             <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover object-center">
-                            
-                            <!-- Quick Add Button (Appears on Hover) -->
-                            <div class="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 flex justify-center bg-gradient-to-t from-black/50 to-transparent">
-                                <button onclick="addToCart(${product.id}, '${defaultSize}')" class="bg-white text-primary hover:bg-primary hover:text-white border border-transparent px-6 py-3 text-[10px] uppercase tracking-widest font-bold transition-colors w-full shadow-lg">
-                                    + Add to Bag (₹${PRICE_CONSTANT})
-                                </button>
-                            </div>
+                            <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </div>
                         <div class="text-center">
                             <span class="text-[9px] text-textMuted uppercase tracking-widest mb-1.5 block font-bold">${product.category}</span>
-                            <h3 class="text-base font-serif text-primary mb-1.5">${product.name}</h3>
-                            <span class="text-sm font-bold text-accent tracking-wide">₹${PRICE_CONSTANT}</span>
+                            <h3 class="text-base font-serif text-primary mb-1.5 group-hover:text-accent transition-colors">${product.name}</h3>
+                            <span class="text-sm font-bold text-primary tracking-wide">₹${PRICE_CONSTANT}</span>
                         </div>
                     </div>
                 `;
-                grid.innerHTML += card;
             });
+        }
+
+        function viewProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            selectedDetailSize = product.sizes[0];
+            detailQty = 1;
+
+            const container = document.getElementById('product-detail-container');
+            let sizesHtml = product.sizes.map(size => `
+                <button onclick="selectDetailSize('${size}')" id="size-btn-${size}" class="size-btn border border-borderLight w-12 h-12 flex items-center justify-center text-xs font-bold hover:border-primary transition-colors ${size === selectedDetailSize ? 'border-primary bg-primary text-white' : 'bg-surface text-primary'}">
+                    ${size}
+                </button>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="w-full md:w-1/2">
+                    <div class="bg-secondary h-[500px] lg:h-[750px] overflow-hidden sticky top-24">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover object-center">
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2 flex flex-col justify-center py-4 md:py-10">
+                    <span class="text-[10px] text-textMuted uppercase tracking-widest mb-3 font-bold">${product.category}</span>
+                    <h1 class="text-4xl md:text-5xl font-serif text-primary mb-4 leading-tight">${product.name}</h1>
+                    <span class="text-2xl font-bold text-accent tracking-wide mb-8">₹${PRICE_CONSTANT}</span>
+                    <p class="text-textMuted font-light text-sm mb-12 leading-relaxed">
+                        Experience the perfect blend of comfort and elegance with this stunning piece. 
+                        Meticulously crafted for the modern wardrobe, it offers a flattering silhouette 
+                        and premium feel, making it an essential addition to your collection.
+                    </p>
+                    <div class="mb-10">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-primary">Select Size</span>
+                        </div>
+                        <div class="flex gap-3 flex-wrap">${sizesHtml}</div>
+                    </div>
+                    <div class="flex gap-4 mb-10">
+                        <div class="flex items-center border border-borderLight bg-surface h-14">
+                            <button onclick="changeDetailQty(-1)" class="w-12 h-full flex items-center justify-center hover:bg-secondary transition-colors text-lg font-light text-primary">-</button>
+                            <span id="detail-qty" class="w-10 text-center text-sm font-bold text-primary">1</span>
+                            <button onclick="changeDetailQty(1)" class="w-12 h-full flex items-center justify-center hover:bg-secondary transition-colors text-lg font-light text-primary">+</button>
+                        </div>
+                        <button onclick="addDetailToCart(${product.id})" class="btn-primary flex-1 bg-primary text-white h-14 uppercase text-xs tracking-widest font-bold flex justify-center items-center gap-2">
+                            <span>Add to Bag</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            showSection('product-detail');
+        }
+
+        function selectDetailSize(size) {
+            selectedDetailSize = size;
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                btn.classList.remove('border-primary', 'bg-primary', 'text-white');
+                btn.classList.add('bg-surface', 'text-primary');
+            });
+            const activeBtn = document.getElementById(`size-btn-${size}`);
+            if(activeBtn) {
+                activeBtn.classList.remove('bg-surface', 'text-primary');
+                activeBtn.classList.add('border-primary', 'bg-primary', 'text-white');
+            }
+        }
+
+        function changeDetailQty(change) {
+            detailQty = Math.max(1, detailQty + change);
+            document.getElementById('detail-qty').textContent = detailQty;
+        }
+
+        function addDetailToCart(productId) {
+            if (!selectedDetailSize) {
+                showToast("Please select a size.", "error");
+                return;
+            }
+            const product = products.find(p => p.id === productId);
+            if(!product) return;
+
+            const existingItem = cart.find(item => item.id === productId && item.size === selectedDetailSize);
+            if (existingItem) existingItem.quantity += detailQty;
+            else cart.push({ ...product, quantity: detailQty, size: selectedDetailSize });
+
+            updateCartUI();
+            saveCart();
+            showToast(`${product.name} added to bag`, 'success');
+            if (!isCartOpen) toggleCart();
         }
 
         // --- 5. CART LOGIC ---
@@ -639,7 +1000,6 @@
             
             if (isCartOpen) {
                 overlay.classList.remove('hidden');
-                // Tiny delay to allow display:block to apply before animating opacity
                 setTimeout(() => overlay.classList.remove('opacity-0'), 10);
                 drawer.classList.remove('translate-x-full');
                 document.body.style.overflow = 'hidden';
@@ -651,37 +1011,18 @@
             }
         }
 
-        function addToCart(productId, size) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-
-            const existingItem = cart.find(item => item.id === productId && item.size === size);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ ...product, quantity: 1, size: size });
-            }
-
-            updateCartUI();
-            saveCart();
-            showToast(`${product.name} added to bag`, 'success');
-        }
-
         function updateQuantity(productId, size, change) {
             const item = cart.find(item => item.id === productId && item.size === size);
             if (!item) return;
 
             item.quantity += change;
-            if (item.quantity <= 0) {
-                cart = cart.filter(i => !(i.id === productId && i.size === size));
-            }
+            if (item.quantity <= 0) cart = cart.filter(i => !(i.id === productId && i.size === size));
+            
             updateCartUI();
             saveCart();
         }
 
-        function saveCart() { 
-            localStorage.setItem('hc_cart', JSON.stringify(cart)); 
-        }
+        function saveCart() { localStorage.setItem('hc_cart', JSON.stringify(cart)); }
 
         function updateCartUI() {
             const cartItemsContainer = document.getElementById('cart-items');
@@ -697,7 +1038,7 @@
                     <div class="h-full flex flex-col items-center justify-center text-textMuted space-y-4 pt-20">
                         <i class="ph-light ph-shopping-bag text-5xl opacity-30"></i>
                         <p class="font-light text-sm">Your exquisite bag is empty.</p>
-                        <button onclick="toggleCart(); showSection('shop');" class="mt-4 border-b border-primary text-primary pb-1 uppercase text-[10px] font-bold tracking-widest hover:text-accent hover:border-accent transition-colors">Continue Shopping</button>
+                        <button onclick="toggleCart(); showSection('shop');" class="mt-4 border-b border-primary text-primary pb-1 uppercase text-[10px] font-bold tracking-widest hover:text-accent transition-colors">Continue Shopping</button>
                     </div>`;
                 cartTotal.textContent = '₹0';
                 return;
@@ -714,7 +1055,6 @@
                         <div class="flex-1">
                             <h4 class="font-serif text-primary text-sm mb-1">${item.name}</h4>
                             <p class="text-[10px] text-textMuted uppercase tracking-widest mb-3 font-bold">Size: ${item.size}</p>
-                            
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center border border-borderLight bg-secondary">
                                     <button onclick="updateQuantity(${item.id}, '${item.size}', -1)" class="w-8 h-8 flex items-center justify-center hover:bg-borderLight transition-colors text-lg font-light">-</button>
@@ -734,8 +1074,6 @@
         }
 
         // --- 6. AUTHENTICATION & ACCOUNT LOGIC ---
-        
-        // OTP Inputs behavior (auto-advance)
         document.querySelectorAll('.otp-input').forEach((input, index, inputs) => {
             input.addEventListener('input', (e) => {
                 if (e.target.value.length === 1 && index < inputs.length - 1) inputs[index + 1].focus();
@@ -747,11 +1085,7 @@
 
         function requestOTP() {
             const phone = document.getElementById('auth-phone').value;
-            if(phone.length < 10) { 
-                showToast("Please enter a valid 10-digit number.", "error"); 
-                return; 
-            }
-            
+            if(phone.length < 10) { showToast("Please enter a valid 10-digit number.", "error"); return; }
             document.getElementById('step-phone').classList.add('hidden');
             document.getElementById('step-otp').classList.remove('hidden');
             document.querySelectorAll('.otp-input')[0].focus();
@@ -764,23 +1098,27 @@
             document.querySelectorAll('.otp-input').forEach(i => i.value = '');
         }
 
-        function handleAuth(e) {
+        async function handleAuth(e) {
             e.preventDefault();
             const phone = document.getElementById('auth-phone').value;
             
-            // Check if user exists in local storage
             const savedUser = localStorage.getItem(`hc_user_${phone}`);
             if(savedUser) {
                 currentUser = JSON.parse(savedUser);
                 showToast("Welcome back!", "success");
             } else {
-                // Create new user profile
                 currentUser = { phone: phone, name: '', address: '', city: '', zip: '', orders: [] };
                 showToast("Account successfully created.", "success");
                 saveUserToStorage();
             }
-
             localStorage.setItem('hc_user', JSON.stringify(currentUser));
+            
+            // Push basic profile block to DB if authed
+            if(userId) {
+                const profileRef = doc(db, 'artifacts', appId, 'users', userId, 'profile', 'details');
+                await setDoc(profileRef, currentUser, { merge: true });
+            }
+
             updateAuthUI();
             renderAccountSection();
         }
@@ -822,7 +1160,6 @@
                 
                 document.getElementById('profile-welcome').textContent = currentUser.name ? `Welcome back, ${currentUser.name}.` : `Welcome, +91 ${currentUser.phone}`;
                 
-                // Populate forms
                 document.getElementById('prof-name').value = currentUser.name || '';
                 document.getElementById('prof-phone').value = `+91 ${currentUser.phone}`;
                 document.getElementById('prof-address').value = currentUser.address || '';
@@ -830,7 +1167,7 @@
                 document.getElementById('prof-zip').value = currentUser.zip || '';
 
                 renderOrders();
-                switchProfileTab('orders'); // Default to orders
+                switchProfileTab('orders');
             } else {
                 authContainer.classList.remove('hidden');
                 profileContainer.classList.add('hidden');
@@ -844,14 +1181,13 @@
                 btn.classList.add('border-transparent', 'text-textMuted');
                 document.getElementById(`tab-content-${t}`).classList.add('hidden');
             });
-
             const activeBtn = document.getElementById(`tab-btn-${tab}`);
             activeBtn.classList.remove('border-transparent', 'text-textMuted');
             activeBtn.classList.add('border-primary', 'bg-secondary', 'text-primary');
             document.getElementById(`tab-content-${tab}`).classList.remove('hidden');
         }
 
-        function saveProfile(e) {
+        async function saveProfile(e) {
             e.preventDefault();
             if(!currentUser) return;
 
@@ -861,25 +1197,30 @@
             currentUser.zip = document.getElementById('prof-zip').value;
 
             saveUserToStorage();
+            
+            // Sync to Database
+            if(userId) {
+                const profileRef = doc(db, 'artifacts', appId, 'users', userId, 'profile', 'details');
+                await setDoc(profileRef, currentUser, { merge: true });
+            }
+
             renderAccountSection(); 
             updateAuthUI(); 
             showToast("Delivery details securely saved.", "success");
         }
 
-        // --- 7. CHECKOUT & ORDERS LOGIC ---
+        // --- 7. CHECKOUT & PAYMENT LOGIC ---
         function processCheckout() {
             if (cart.length === 0) {
                 showToast("Your shopping bag is empty.", "error");
                 return;
             }
-
             if (!currentUser) {
                 toggleCart();
                 showSection('account');
                 showToast("Please sign in to complete your purchase.", "info");
                 return;
             }
-
             if (!currentUser.address || !currentUser.city || !currentUser.name) {
                 toggleCart();
                 showSection('account');
@@ -888,30 +1229,58 @@
                 return;
             }
 
-            // Generate Mock Order
-            const total = cart.reduce((sum, item) => sum + PRICE_CONSTANT * item.quantity, 0);
-            const newOrder = {
-                id: 'HC-' + Math.floor(100000 + Math.random() * 900000),
-                date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-                status: 'Processing',
-                total: total,
-                items: [...cart]
-            };
+            // Open Payment Modal instead of instant checkout
+            document.getElementById('payment-modal').classList.remove('hidden');
+            document.getElementById('payment-total').textContent = cart.reduce((sum, item) => sum + PRICE_CONSTANT * item.quantity, 0);
+        }
 
-            // Prepend to orders array
-            currentUser.orders = currentUser.orders || [];
-            currentUser.orders.unshift(newOrder); 
-            saveUserToStorage();
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        }
 
-            // Clear Cart
-            cart = [];
-            saveCart();
-            updateCartUI();
-            toggleCart();
+        async function confirmPayment() {
+            const btn = document.getElementById('confirm-pay-btn');
+            btn.innerHTML = '<i class="ph-light ph-spinner-gap animate-spin text-lg"></i> <span>Processing...</span>';
+            btn.disabled = true;
 
-            showToast("Order Placed Successfully!", "success");
-            showSection('account');
-            switchProfileTab('orders');
+            // Simulate Bank/QR Gateway Process Delay
+            setTimeout(async () => {
+                const total = cart.reduce((sum, item) => sum + PRICE_CONSTANT * item.quantity, 0);
+                const methodSelect = document.getElementById('payment-method-select');
+                const methodName = methodSelect.options[methodSelect.selectedIndex].value;
+
+                const newOrder = {
+                    id: 'HC-' + Math.floor(100000 + Math.random() * 900000),
+                    date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+                    status: 'Processing',
+                    total: total,
+                    items: [...cart],
+                    timestamp: Date.now(),
+                    paymentMethod: methodName
+                };
+
+                if (userId) {
+                    const ordersRef = collection(db, 'artifacts', appId, 'users', userId, 'orders');
+                    await addDoc(ordersRef, newOrder);
+                } else {
+                    currentUser.orders = currentUser.orders || [];
+                    currentUser.orders.unshift(newOrder); 
+                    saveUserToStorage();
+                }
+
+                cart = [];
+                saveCart();
+                updateCartUI();
+                toggleCart();
+                closePaymentModal();
+
+                btn.innerHTML = '<span>Confirm & Pay</span>';
+                btn.disabled = false;
+
+                showToast("Payment Successful & Order Placed!", "success");
+                showSection('account');
+                switchProfileTab('orders');
+            }, 1500);
         }
 
         function renderOrders() {
@@ -937,8 +1306,10 @@
                         <span class="font-bold text-sm text-primary">₹${PRICE_CONSTANT * item.quantity}</span>
                     </div>
                 `).join('');
+                
+                const paymentBadge = order.paymentMethod ? `<span class="mt-3 inline-block text-[9px] text-accent border border-accent/30 bg-accent/5 px-2 py-1 uppercase tracking-widest"><i class="ph-light ph-credit-card mr-1"></i> Paid via ${order.paymentMethod}</span>` : '';
 
-                const card = `
+                list.insertAdjacentHTML('beforeend', `
                     <div class="border border-borderLight bg-white shadow-sm overflow-hidden fade-in">
                         <div class="flex flex-col sm:flex-row justify-between p-5 md:p-6 bg-secondary border-b border-borderLight gap-4">
                             <div>
@@ -951,19 +1322,161 @@
                                 </span>
                             </div>
                         </div>
-                        
                         <div class="p-5 md:p-6">
                             ${itemsHtml}
+                            ${paymentBadge}
                         </div>
-                        
                         <div class="flex justify-between items-center p-5 md:p-6 bg-secondary/50 border-t border-borderLight">
                             <span class="text-[10px] uppercase tracking-widest text-textMuted font-bold">Total Paid</span>
                             <span class="text-xl font-serif font-bold text-primary">₹${order.total}</span>
                         </div>
                     </div>
-                `;
-                list.insertAdjacentHTML('beforeend', card);
+                `);
             });
+        }
+
+        // --- 8. ADMIN LOGIC ---
+        let isAdminLoggedIn = false;
+        let editingProductId = null;
+        let uploadedImageURL = "";
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const pwd = document.getElementById('admin-password-input').value;
+            if (pwd === "hollywoodadmin") {
+                isAdminLoggedIn = true;
+                document.getElementById('admin-login-screen').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+                document.getElementById('admin-dashboard').classList.add('flex');
+                renderAdminProducts();
+                showToast("Admin access granted.", "success");
+            } else {
+                showToast("Incorrect password.", "error");
+            }
+        }
+
+        function switchAdminTab(tab) {
+            ['manage', 'add'].forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                btn.classList.remove('border-primary', 'bg-secondary', 'text-primary');
+                btn.classList.add('border-transparent', 'text-textMuted');
+                document.getElementById(`admin-tab-${t}`).classList.add('hidden');
+            });
+            const activeBtn = document.getElementById(`tab-btn-${tab}`);
+            activeBtn.classList.remove('border-transparent', 'text-textMuted');
+            activeBtn.classList.add('border-primary', 'bg-secondary', 'text-primary');
+            document.getElementById(`admin-tab-${tab}`).classList.remove('hidden');
+            
+            if(tab === 'add' && !editingProductId) resetAdminForm();
+        }
+
+        function renderAdminProducts() {
+            const list = document.getElementById('admin-products-list');
+            if(products.length === 0) {
+                list.innerHTML = `<tr><td colspan="4" class="py-10 text-center text-textMuted text-sm font-light">Inventory is currently empty.</td></tr>`;
+                return;
+            }
+
+            list.innerHTML = products.map(p => `
+                <tr class="border-b border-borderLight last:border-0 hover:bg-secondary/50 transition-colors">
+                    <td class="py-4 pr-4 flex items-center gap-4">
+                        <img src="${p.image}" class="w-12 h-16 object-cover bg-secondary border border-borderLight">
+                        <span class="font-serif text-primary text-sm">${p.name}</span>
+                    </td>
+                    <td class="py-4 px-2 text-xs font-bold text-textMuted uppercase tracking-widest">${p.category}</td>
+                    <td class="py-4 px-2 text-sm font-bold text-primary">₹${PRICE_CONSTANT}</td>
+                    <td class="py-4 pl-2 text-right space-x-2">
+                        <button onclick="editProduct(${p.id})" class="text-textMuted hover:text-primary transition-colors p-2" title="Edit Product">
+                            <i class="ph-light ph-pencil-simple text-lg"></i>
+                        </button>
+                        <button onclick="deleteProduct(${p.id})" class="text-textMuted hover:text-red-500 transition-colors p-2" title="Delete Product">
+                            <i class="ph-light ph-trash text-lg"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function deleteProduct(id) {
+            if(!confirm("Are you sure you want to delete this product?")) return;
+            const product = products.find(p => p.id === id);
+            
+            if (product && product.dbId && userId) {
+                const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', product.dbId);
+                await deleteDoc(productRef);
+                showToast("Product deleted successfully.", "success");
+            }
+        }
+        
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Convert file to Base64 for database storage
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageURL = e.target.result;
+                    document.getElementById('image-preview').src = uploadedImageURL;
+                    document.getElementById('image-preview-container').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if(!product) return;
+
+            editingProductId = id;
+            document.getElementById('new-prod-name').value = product.name;
+            document.getElementById('new-prod-cat').value = product.category;
+            document.getElementById('new-prod-sizes').value = product.sizes.join(', ');
+            
+            uploadedImageURL = product.image;
+            document.getElementById('image-preview').src = uploadedImageURL;
+            document.getElementById('image-preview-container').classList.remove('hidden');
+
+            document.getElementById('admin-form-title').innerText = "Edit Style";
+            document.getElementById('admin-submit-btn').querySelector('span').innerText = "Update Product";
+            switchAdminTab('add');
+        }
+        
+        function resetAdminForm() {
+            editingProductId = null;
+            document.getElementById('add-product-form').reset();
+            uploadedImageURL = "";
+            document.getElementById('image-preview-container').classList.add('hidden');
+            document.getElementById('admin-form-title').innerText = "Add New Style";
+            document.getElementById('admin-submit-btn').querySelector('span').innerText = "Publish Product";
+            document.getElementById('new-prod-image-file').value = "";
+        }
+
+        async function handleNewProduct(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-prod-name').value;
+            const category = document.getElementById('new-prod-cat').value;
+            const sizesStr = document.getElementById('new-prod-sizes').value;
+            
+            if(!uploadedImageURL) { showToast("Please upload an image.", "error"); return; }
+            const sizes = sizesStr.split(',').map(s => s.trim()).filter(s => s);
+
+            if (editingProductId) {
+                const product = products.find(p => p.id === editingProductId);
+                if (product && product.dbId && userId) {
+                    const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', product.dbId);
+                    await updateDoc(productRef, { name, category, image: uploadedImageURL, sizes });
+                    showToast("Product successfully updated!", "success");
+                }
+            } else {
+                const newProduct = { id: Date.now(), name, category, image: uploadedImageURL, sizes, price: PRICE_CONSTANT };
+                if (userId) {
+                    const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+                    await addDoc(productsRef, newProduct);
+                    showToast("New product successfully published!", "success");
+                }
+            }
+            
+            resetAdminForm();
+            switchAdminTab('manage');
         }
     </script>
 </body>
