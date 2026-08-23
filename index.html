@@ -639,12 +639,12 @@
         // 1. PASTE YOUR FIREBASE CONFIG HERE
         // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyDMYpXQVShG_WIp-AP7SL8V6sN6P-IivRo",
-            authDomain: "hollywood-collections-94158.firebaseapp.com",
-            projectId: "hollywood-collections-94158",
-            storageBucket: "hollywood-collections-94158.firebasestorage.app",
-            messagingSenderId: "935761895040",
-            appId: "1:935761895040:web:db7db8431ddcf96d2dd065"
+              apiKey: "AIzaSyDMYpXQVShG_WIp-AP7SL8V6sN6P-IivRo",
+              authDomain: "hollywood-collections-94158.firebaseapp.com",
+              projectId: "hollywood-collections-94158",
+              storageBucket: "hollywood-collections-94158.firebasestorage.app",
+              messagingSenderId: "935761895040",
+              appId: "1:935761895040:web:db7db8431ddcf96d2dd065"
         };
         
         let app, db, auth, userId = null;
@@ -1402,21 +1402,51 @@
             const product = products.find(p => p.id === id);
             
             if (product && product.dbId && userId) {
-                const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', product.dbId);
-                await deleteDoc(productRef);
-                showToast("Product deleted successfully.", "success");
+                try {
+                    const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', product.dbId);
+                    await deleteDoc(productRef);
+                    showToast("Product deleted successfully.", "success");
+                } catch (error) {
+                    showToast("Failed to delete: " + error.message, "error");
+                }
+            } else if (product) {
+                products = products.filter(p => p.id !== id);
+                renderAdminProducts();
+                showToast("Product deleted (Local Mode).", "info");
             }
         }
         
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (file) {
-                // Convert file to Base64 for database storage
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    uploadedImageURL = e.target.result;
-                    document.getElementById('image-preview').src = uploadedImageURL;
-                    document.getElementById('image-preview-container').classList.remove('hidden');
+                    // Compress image before converting to Base64 to prevent Firebase 1MB limit error
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800;
+                        const MAX_HEIGHT = 800;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        } else {
+                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Output compressed base64 (70% quality JPEG)
+                        uploadedImageURL = canvas.toDataURL('image/jpeg', 0.7); 
+                        document.getElementById('image-preview').src = uploadedImageURL;
+                        document.getElementById('image-preview-container').classList.remove('hidden');
+                    };
+                    img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             }
@@ -1452,31 +1482,59 @@
 
         async function handleNewProduct(e) {
             e.preventDefault();
-            const name = document.getElementById('new-prod-name').value;
-            const category = document.getElementById('new-prod-cat').value;
-            const sizesStr = document.getElementById('new-prod-sizes').value;
             
-            if(!uploadedImageURL) { showToast("Please upload an image.", "error"); return; }
-            const sizes = sizesStr.split(',').map(s => s.trim()).filter(s => s);
+            // Show loading state
+            const btn = document.getElementById('admin-submit-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-light ph-spinner-gap animate-spin text-lg"></i> <span>Publishing...</span>';
+            btn.disabled = true;
 
-            if (editingProductId) {
-                const product = products.find(p => p.id === editingProductId);
-                if (product && product.dbId && userId) {
-                    const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', product.dbId);
-                    await updateDoc(productRef, { name, category, image: uploadedImageURL, sizes });
-                    showToast("Product successfully updated!", "success");
+            try {
+                const name = document.getElementById('new-prod-name').value;
+                const category = document.getElementById('new-prod-cat').value;
+                const sizesStr = document.getElementById('new-prod-sizes').value;
+                
+                if(!uploadedImageURL) { 
+                    showToast("Please upload an image.", "error"); 
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return; 
                 }
-            } else {
-                const newProduct = { id: Date.now(), name, category, image: uploadedImageURL, sizes, price: PRICE_CONSTANT };
-                if (userId) {
-                    const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
-                    await addDoc(productsRef, newProduct);
-                    showToast("New product successfully published!", "success");
+                const sizes = sizesStr.split(',').map(s => s.trim()).filter(s => s);
+
+                if (editingProductId) {
+                    const product = products.find(p => p.id === editingProductId);
+                    if (product && product.dbId && userId) {
+                        const productRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', product.dbId);
+                        await updateDoc(productRef, { name, category, image: uploadedImageURL, sizes });
+                        showToast("Product successfully updated!", "success");
+                    } else if (product) {
+                        product.name = name; product.category = category; product.image = uploadedImageURL; product.sizes = sizes;
+                        showToast("Product updated locally.", "info");
+                        renderAdminProducts();
+                    }
+                } else {
+                    const newProduct = { id: Date.now(), name, category, image: uploadedImageURL, sizes, price: PRICE_CONSTANT };
+                    if (userId) {
+                        const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+                        await addDoc(productsRef, newProduct);
+                        showToast("New product successfully published!", "success");
+                    } else {
+                        products.unshift(newProduct);
+                        showToast("New product published locally.", "info");
+                        renderAdminProducts();
+                    }
                 }
+                
+                resetAdminForm();
+                switchAdminTab('manage');
+            } catch (error) {
+                console.error(error);
+                showToast("Failed to publish: " + error.message, "error");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
-            
-            resetAdminForm();
-            switchAdminTab('manage');
         }
     </script>
 </body>
