@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hollywood Collections | Premium Fashion</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons (Light & Elegant) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#000000',
+                        secondary: '#F9F9F9',
+                        accent: '#B8975A', // Refined, softer luxury gold
+                        surface: '#FFFFFF',
+                        textMuted: '#888888',
+                        borderLight: '#EBEBEB'
+                    },
+                    fontFamily: {
+                        sans: ['Lato', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Lato', sans-serif; background-color: #F9F9F9; color: #000000; overflow-x: hidden; }
+        h1, h2, h3, h4, h5, .font-serif { font-family: 'Playfair Display', serif; }
+        
+        /* Smooth scrolling & Scrollbar */
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #F9F9F9; }
+        ::-webkit-scrollbar-thumb { background: #B8975A; }
+        
+        /* Elegant Inputs */
+        .elegant-input {
+            border: 1px solid #EBEBEB;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+        .elegant-input:focus {
+            outline: none;
+            border-color: #000000;
+        }
+
+        /* Image Hover Effects */
+        .img-hover-zoom { overflow: hidden; }
+        .img-hover-zoom img { transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .product-card:hover .img-hover-zoom img { transform: scale(1.06); }
+
+        /* Button Hover Effects */
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 100%;
+            background-color: #B8975A;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1;
+        }
+        .btn-primary:hover::after { transform: translateY(0); }
+        .btn-primary > span { position: relative; z-index: 2; transition: color 0.3s ease; }
+        .btn-primary:hover > span { color: #ffffff; }
+
+        /* Custom Dropdown Animation */
+        .dropdown-menu {
+            transform-origin: top;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            transform: scaleY(0);
+            opacity: 0;
+        }
+        .dropdown-menu.active {
+            transform: scaleY(1);
+            opacity: 1;
+        }
+
+        /* Toast Animation */
+        @keyframes toastSlideIn {
+            from { transform: translateY(100%) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes toastSlideOut {
+            from { transform: translateY(0) scale(1); opacity: 1; }
+            to { transform: translateY(100%) scale(0.9); opacity: 0; }
+        }
+        .toast-enter { animation: toastSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .toast-exit { animation: toastSlideOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        /* OTP Inputs */
+        .otp-input { width: 3rem; height: 3.5rem; text-align: center; font-size: 1.5rem; font-weight: 400; border-bottom: 1px solid #000; border-radius: 0; background: transparent; transition: border-color 0.3s; }
+        .otp-input:focus { outline: none; border-color: #B8975A; border-width: 2px; }
+
+        .hero-overlay { background: linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 100%); }
+        
+        /* Fade In Utility */
+        .fade-in { animation: fadeIn 0.8s ease forwards; opacity: 0; }
+        @keyframes fadeIn { to { opacity: 1; } }
+    </style>
+</head>
+<body class="antialiased flex flex-col min-h-screen">
+
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+    <header class="bg-surface/95 backdrop-blur-md border-b border-borderLight sticky top-0 z-40 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden text-primary hover:text-accent transition-colors">
+                    <i class="ph-light ph-list text-2xl"></i>
+                </button>
+
+                <!-- Brand Logo -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="showSection('home')">
+                    <span class="font-serif text-2xl md:text-3xl font-bold text-primary tracking-widest uppercase">Hollywood <span class="text-accent font-normal text-xl">&copy;</span></span>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex space-x-10">
+                    <button onclick="showSection('home')" class="text-xs font-bold uppercase tracking-widest hover:text-accent transition-colors">Home</button>
+                    <button onclick="showSection('shop')" class="text-xs font-bold uppercase tracking-widest hover:text-accent transition-colors">Collections</button>
+                    <button onclick="showSection('home')" class="text-xs font-bold uppercase tracking-widest hover:text-accent transition-colors text-textMuted">Lookbook</button>
+                </nav>
+
+                <!-- Icons & User Actions -->
+                <div class="flex items-center space-x-6">
+                    <!-- User Account -->
+                    <button onclick="showSection('account')" class="text-primary hover:text-accent transition-colors flex items-center gap-2 group">
+                        <i class="ph-light ph-user text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span id="nav-user-name" class="hidden lg:inline text-[10px] font-bold uppercase tracking-widest">Sign In</span>
+                    </button>
+
+                    <!-- Cart -->
+                    <button onclick="toggleCart()" class="text-primary hover:text-accent transition-colors relative group">
+                        <i class="ph-light ph-shopping-bag text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span id="cart-count" class="absolute -top-1 -right-2 bg-accent text-white text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center opacity-0 transition-opacity">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <section id="home-section" class="block fade-in">
+            <!-- Hero -->
+            <div class="relative bg-primary overflow-hidden h-[75vh] min-h-[500px] flex items-center">
+                <div class="absolute inset-0 z-0">
+                    <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" alt="Fashion Model" class="w-full h-full object-cover object-top opacity-90">
+                </div>
+                <div class="absolute inset-0 hero-overlay z-10"></div>
+                
+                <div class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center md:text-left">
+                    <div class="md:w-2/3 lg:w-1/2">
+                        <span class="text-accent font-bold tracking-[0.2em] uppercase text-xs mb-4 block">New Arrivals</span>
+                        <h1 class="text-5xl md:text-7xl font-serif text-white mb-6 leading-tight">Effortlessly <br><span class="italic font-light">Elegant.</span></h1>
+                        <p class="text-lg text-gray-300 mb-10 font-light max-w-md mx-auto md:mx-0">Discover curated styles designed to make every occasion unforgettable. Unveiling our latest premium collection.</p>
+                        <button onclick="showSection('shop')" class="btn-primary bg-white text-primary px-10 py-4 uppercase text-xs tracking-widest font-bold">
+                            <span>Explore Collection</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="py-24 bg-surface">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl md:text-4xl font-serif text-primary mb-4">Curated Categories</h2>
+                        <div class="w-12 h-[1px] bg-accent mx-auto"></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="group cursor-pointer relative overflow-hidden h-[450px]" onclick="showSection('shop'); filterByCategory('Dresses', 'Dresses');">
+                            <img src="assets/images/dress3.png" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500"></div>
+                            <div class="absolute bottom-8 left-8 right-8 text-center bg-white/95 backdrop-blur-sm py-4 transition-all transform translate-y-2 group-hover:translate-y-0 opacity-90 group-hover:opacity-100">
+                                <h3 class="font-serif text-lg uppercase tracking-widest text-primary">Dresses</h3>
+                            </div>
+                        </div>
+                        <div class="group cursor-pointer relative overflow-hidden h-[450px]" onclick="showSection('shop'); filterByCategory('Co-ords', 'Co-ords');">
+                            <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500"></div>
+                            <div class="absolute bottom-8 left-8 right-8 text-center bg-white/95 backdrop-blur-sm py-4 transition-all transform translate-y-2 group-hover:translate-y-0 opacity-90 group-hover:opacity-100">
+                                <h3 class="font-serif text-lg uppercase tracking-widest text-primary">Co-ords</h3>
+                            </div>
+                        </div>
+                        <div class="group cursor-pointer relative overflow-hidden h-[450px]" onclick="showSection('shop'); filterByCategory('Kurtis', 'Kurtis');">
+                            <img src="assets/images/dress1.png" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500"></div>
+                            <div class="absolute bottom-8 left-8 right-8 text-center bg-white/95 backdrop-blur-sm py-4 transition-all transform translate-y-2 group-hover:translate-y-0 opacity-90 group-hover:opacity-100">
+                                <h3 class="font-serif text-lg uppercase tracking-widest text-primary">Kurtis</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="shop-section" class="hidden py-16 fade-in">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 border-b border-borderLight pb-6">
+                    <div>
+                        <h2 class="text-4xl font-serif text-primary">The Collection</h2>
+                        <p class="text-textMuted mt-2 font-light text-sm">Explore our premium selection, all priced beautifully at ₹500.</p>
+                    </div>
+
+                    <!-- Custom Elegant Filter Dropdown -->
+                    <div class="relative w-full md:w-64" id="custom-filter-container">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-textMuted mb-2">Filter by Style</label>
+                        <button type="button" onclick="toggleFilterDropdown()" class="w-full bg-surface border border-borderLight text-primary py-3 px-4 flex justify-between items-center transition-colors hover:border-primary focus:outline-none">
+                            <span id="filter-selected-text" class="text-xs uppercase tracking-widest font-bold">All Styles</span>
+                            <i class="ph-light ph-caret-down text-lg transition-transform duration-300" id="filter-caret"></i>
+                        </button>
+                        
+                        <!-- Dropdown Options -->
+                        <div id="filter-dropdown" class="dropdown-menu absolute z-50 w-full bg-surface border border-t-0 border-borderLight shadow-xl top-full left-0">
+                            <div class="flex flex-col">
+                                <button onclick="filterByCategory('all', 'All Styles')" class="text-left px-4 py-3 text-xs uppercase tracking-widest font-bold text-textMuted hover:text-primary hover:bg-secondary transition-colors">All Styles</button>
+                                <button onclick="filterByCategory('Dresses', 'Dresses')" class="text-left px-4 py-3 text-xs uppercase tracking-widest font-bold text-textMuted hover:text-primary hover:bg-secondary transition-colors">Dresses</button>
+                                <button onclick="filterByCategory('Kurtis', 'Kurtis')" class="text-left px-4 py-3 text-xs uppercase tracking-widest font-bold text-textMuted hover:text-primary hover:bg-secondary transition-colors">Kurtis</button>
+                                <button onclick="filterByCategory('Co-ords', 'Co-ords')" class="text-left px-4 py-3 text-xs uppercase tracking-widest font-bold text-textMuted hover:text-primary hover:bg-secondary transition-colors">Co-ords</button>
+                                <button onclick="filterByCategory('Party Wear', 'Party Wear')" class="text-left px-4 py-3 text-xs uppercase tracking-widest font-bold text-textMuted hover:text-primary hover:bg-secondary transition-colors">Party Wear</button>
+                                <button onclick="filterByCategory('Tops', 'Tops')" class="text-left px-4 py-3 text-xs uppercase tracking-widest font-bold text-textMuted hover:text-primary hover:bg-secondary transition-colors">Tops</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <section id="account-section" class="hidden py-16 bg-secondary min-h-[70vh] fade-in">
+            <div class="max-w-5xl mx-auto px-4">
+                
+                <!-- Login/Signup Form -->
+                <div id="auth-container" class="max-w-md mx-auto bg-surface p-10 shadow-sm border border-borderLight relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-accent"></div>
+                    <div class="text-center mb-10">
+                        <i class="ph-light ph-crown text-4xl text-accent mb-4"></i>
+                        <h2 class="text-3xl font-serif text-primary">Client Access</h2>
+                        <p class="text-textMuted mt-3 font-light text-sm">Join Hollywood Collections to track your premium orders and save delivery details.</p>
+                    </div>
+
+                    <form id="auth-form" onsubmit="handleAuth(event)">
+                        <!-- Phone Input -->
+                        <div id="step-phone" class="space-y-6">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Mobile Number</label>
+                                <div class="relative flex items-center">
+                                    <span class="absolute left-0 pl-4 text-textMuted font-bold text-sm">
+                                        +91
+                                    </span>
+                                    <input type="tel" id="auth-phone" required pattern="[0-9]{10}" placeholder="Enter 10 digits" class="elegant-input w-full pl-14 pr-4 py-3 bg-secondary focus:bg-surface text-primary text-sm">
+                                </div>
+                            </div>
+                            <button type="button" onclick="requestOTP()" class="btn-primary bg-primary text-white w-full py-4 uppercase text-xs tracking-widest font-bold">
+                                <span>Get Access Code</span>
+                            </button>
+                        </div>
+
+                        <!-- OTP Input -->
+                        <div id="step-otp" class="hidden space-y-6 text-center">
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Enter Access Code</label>
+                            <div class="flex gap-4 justify-center mb-2">
+                                <input type="text" maxlength="1" class="otp-input focus:bg-surface text-primary">
+                                <input type="text" maxlength="1" class="otp-input focus:bg-surface text-primary">
+                                <input type="text" maxlength="1" class="otp-input focus:bg-surface text-primary">
+                                <input type="text" maxlength="1" class="otp-input focus:bg-surface text-primary">
+                            </div>
+                            <p class="text-xs text-textMuted font-light mb-6">For this demo, enter any 4 digits.</p>
+                            
+                            <button type="submit" class="btn-primary bg-primary text-white w-full py-4 uppercase text-xs tracking-widest font-bold">
+                                <span>Verify & Enter</span>
+                            </button>
+                            <button type="button" onclick="resetAuth()" class="text-[10px] uppercase tracking-widest text-textMuted hover:text-primary mt-4 underline underline-offset-4">
+                                Change Number
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Profile Dashboard -->
+                <div id="profile-container" class="hidden">
+                    <div class="flex justify-between items-end mb-8 border-b border-borderLight pb-6">
+                        <div>
+                            <h2 class="text-3xl font-serif text-primary">My Account</h2>
+                            <p id="profile-welcome" class="text-textMuted mt-1 font-light text-sm">Welcome back to Hollywood Collections.</p>
+                        </div>
+                        <button onclick="logout()" class="text-[10px] font-bold uppercase tracking-widest text-textMuted hover:text-red-500 transition-colors flex items-center gap-2">
+                            <i class="ph-light ph-sign-out text-lg"></i> Sign Out
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-8">
+                        
+                        <!-- Sidebar Nav -->
+                        <div class="w-full md:w-64 flex-shrink-0">
+                            <div class="bg-surface border border-borderLight flex flex-col">
+                                <button onclick="switchProfileTab('orders')" id="tab-btn-orders" class="text-left px-6 py-4 border-l-2 border-primary bg-secondary font-bold text-primary uppercase tracking-widest text-[10px] flex items-center justify-between transition-all">
+                                    <span class="flex items-center gap-3"><i class="ph-light ph-package text-lg"></i> Orders</span>
+                                    <i class="ph-light ph-caret-right"></i>
+                                </button>
+                                <button onclick="switchProfileTab('details')" id="tab-btn-details" class="text-left px-6 py-4 border-l-2 border-transparent hover:bg-secondary font-bold text-textMuted uppercase tracking-widest text-[10px] flex items-center justify-between transition-all border-t border-borderLight">
+                                    <span class="flex items-center gap-3"><i class="ph-light ph-address-book text-lg"></i> Address</span>
+                                    <i class="ph-light ph-caret-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Main Content -->
+                        <div class="w-full flex-grow">
+                            
+                            <!-- Orders Tab -->
+                            <div id="tab-content-orders" class="bg-surface p-6 md:p-10 border border-borderLight fade-in">
+                                <h3 class="text-xl font-serif text-primary mb-6">Order History</h3>
+                                <div id="orders-list" class="space-y-6">
+                                    <!-- Injected via JS -->
+                                    <div class="text-center py-16 text-textMuted" id="no-orders-msg">
+                                        <i class="ph-light ph-shopping-bag-open text-5xl mb-4 text-borderLight"></i>
+                                        <p class="font-light text-sm">You haven't placed any orders yet.</p>
+                                        <button onclick="showSection('shop')" class="mt-6 border-b border-primary text-primary pb-1 uppercase text-[10px] font-bold tracking-widest hover:text-accent hover:border-accent transition-colors">Start Shopping</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Address Tab -->
+                            <div id="tab-content-details" class="hidden bg-surface p-6 md:p-10 border border-borderLight fade-in">
+                                <h3 class="text-xl font-serif text-primary mb-6">Delivery Details</h3>
+                                <p class="text-xs text-textMuted font-light mb-6">Please keep your details up to date for smooth deliveries.</p>
+                                
+                                <form id="profile-form" onsubmit="saveProfile(event)" class="space-y-5">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Full Name</label>
+                                            <input type="text" id="prof-name" class="elegant-input w-full px-4 py-3 text-sm text-primary" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Phone Number</label>
+                                            <input type="text" id="prof-phone" class="elegant-input w-full px-4 py-3 text-sm bg-secondary text-textMuted cursor-not-allowed" readonly>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Street Address / House No.</label>
+                                        <input type="text" id="prof-address" class="elegant-input w-full px-4 py-3 text-sm text-primary" required>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">City</label>
+                                            <input type="text" id="prof-city" class="elegant-input w-full px-4 py-3 text-sm text-primary" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">PIN Code</label>
+                                            <input type="text" id="prof-zip" class="elegant-input w-full px-4 py-3 text-sm text-primary" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="pt-4">
+                                        <button type="submit" class="btn-primary bg-primary text-white px-8 py-3 uppercase text-xs tracking-widest font-bold">
+                                            <span>Save Details</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="cart-overlay" class="fixed inset-0 bg-black/30 z-50 hidden backdrop-blur-sm transition-opacity opacity-0" onclick="toggleCart()"></div>
+    
+    <div id="cart-drawer" class="fixed inset-y-0 right-0 max-w-md w-full bg-surface shadow-2xl z-50 transform translate-x-full transition-transform duration-500 ease-in-out flex flex-col">
+        <div class="p-6 border-b border-borderLight flex justify-between items-center bg-surface">
+            <h2 class="text-xl font-serif text-primary uppercase tracking-widest">
+                Shopping Bag
+            </h2>
+            <button onclick="toggleCart()" class="text-textMuted hover:text-primary transition-colors">
+                <i class="ph-light ph-x text-2xl"></i>
+            </button>
+        </div>
+        
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-6 bg-secondary/30">
+            <!-- Items injected via JS -->
+        </div>
+
+        <div class="border-t border-borderLight p-6 bg-surface shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-primary font-bold uppercase tracking-widest text-[10px]">Subtotal</span>
+                <span class="text-xl font-serif text-primary" id="cart-total">₹0</span>
+            </div>
+            <p class="text-[10px] text-textMuted mb-6 font-light uppercase tracking-wide">Shipping & taxes calculated at checkout. All items priced at ₹500.</p>
+            <button onclick="processCheckout()" class="btn-primary bg-primary text-white w-full py-4 uppercase text-xs tracking-widest font-bold flex justify-center items-center gap-3">
+                <span>Proceed to Checkout</span> <i class="ph-light ph-arrow-right text-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <footer class="bg-primary text-white pt-20 pb-10 border-t-2 border-accent">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                <div class="col-span-1 md:col-span-2">
+                    <span class="font-serif text-3xl font-bold tracking-widest uppercase mb-6 block">Hollywood <span class="text-accent font-normal text-xl">&copy;</span></span>
+                    <p class="text-gray-400 text-sm max-w-sm font-light leading-relaxed">Premium, elegant, and trendy fashion boutique based in Kochi. We curate styles designed to make every occasion unforgettable.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-6 text-[10px] uppercase tracking-widest text-gray-500">Shop</h4>
+                    <ul class="space-y-3 text-gray-300 text-sm font-light">
+                        <li><a href="#" onclick="showSection('shop'); filterByCategory('Dresses', 'Dresses');" class="hover:text-accent transition-colors flex items-center gap-2"><i class="ph-light ph-caret-right text-accent"></i> Dresses</a></li>
+                        <li><a href="#" onclick="showSection('shop'); filterByCategory('Co-ords', 'Co-ords');" class="hover:text-accent transition-colors flex items-center gap-2"><i class="ph-light ph-caret-right text-accent"></i> Co-ords</a></li>
+                        <li><a href="#" onclick="showSection('shop'); filterByCategory('Kurtis', 'Kurtis');" class="hover:text-accent transition-colors flex items-center gap-2"><i class="ph-light ph-caret-right text-accent"></i> Kurtis</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-6 text-[10px] uppercase tracking-widest text-gray-500">Connect</h4>
+                    <ul class="space-y-3 text-gray-300 text-sm font-light">
+                        <li><a href="#" class="hover:text-accent transition-colors flex items-center gap-2"><i class="ph-light ph-instagram-logo text-lg"></i> Instagram</a></li>
+                        <li><a href="#" class="hover:text-accent transition-colors flex items-center gap-2"><i class="ph-light ph-whatsapp-logo text-lg"></i> WhatsApp</a></li>
+                        <li><a href="#" class="hover:text-accent transition-colors flex items-center gap-2"><i class="ph-light ph-envelope-simple text-lg"></i> Email Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center md:text-left flex flex-col md:flex-row justify-between text-gray-500 text-[10px] tracking-widest uppercase font-bold">
+                <p>&copy; 2026 Hollywood Collections. All rights reserved.</p>
+                <div class="space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-white transition-colors">Privacy</a>
+                    <a href="#" class="hover:text-white transition-colors">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. DATA STRUCTURE ---
+        const PRICE_CONSTANT = 500;
+        const products = [
+            { id: 1, name: 'Classic Floral Dress', category: 'Dresses', image: 'assets/images/dress1.png', sizes: ['S', 'M', 'L'] },
+            { id: 2, name: 'Elegant Printed Kurti', category: 'Kurtis', image: 'assets/images/dress2.png', sizes: ['M', 'L', 'XL'] },
+            { id: 3, name: 'Premium Co-ord Set', category: 'Co-ords', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000', sizes: ['XS', 'S', 'M'] },
+            { id: 4, name: 'Minimal Party Dress', category: 'Party Wear', image: 'https://images.unsplash.com/photo-1566206091558-7f218b696731?q=80&w=1000', sizes: ['S', 'M', 'L'] },
+            { id: 5, name: 'Cotton Summer Top', category: 'Tops', image: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=1000', sizes: ['S', 'M', 'L', 'XL'] },
+            { id: 6, name: 'Midnight Velvet Dress', category: 'Party Wear', image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=1000', sizes: ['S', 'M'] },
+            { id: 7, name: 'Beige Lounge Set', category: 'Co-ords', image: 'assets/images/dress3.png', sizes: ['M', 'L'] },
+            { id: 8, name: 'Embroidered Tunic', category: 'Kurtis', image: 'assets/images/dress4.png', sizes: ['L', 'XL', 'XXL'] }
+        ];
+
+        let cart = [];
+        let isCartOpen = false;
+        let currentUser = null; 
+        let currentFilter = 'all';
+
+        // --- 2. INITIALIZATION ---
+        window.onload = () => {
+            loadInitialState();
+            renderProducts();
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                const container = document.getElementById('custom-filter-container');
+                const dropdown = document.getElementById('filter-dropdown');
+                if (container && !container.contains(e.target) && dropdown.classList.contains('active')) {
+                    toggleFilterDropdown();
+                }
+            });
+        };
+
+        function loadInitialState() {
+            const savedCart = localStorage.getItem('hc_cart');
+            if (savedCart) cart = JSON.parse(savedCart);
+            
+            const savedUser = localStorage.getItem('hc_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateAuthUI();
+            }
+            updateCartUI();
+        }
+
+        // --- 3. CUSTOM UI COMPONENTS ---
+        
+        // Premium Toast Notification
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let icon = '<i class="ph-light ph-check-circle text-2xl text-accent"></i>';
+            let bgStyle = 'bg-surface border-borderLight';
+            
+            if (type === 'error') {
+                icon = '<i class="ph-light ph-warning-circle text-2xl text-red-500"></i>';
+                bgStyle = 'bg-surface border-red-200';
+            } else if (type === 'info') {
+                icon = '<i class="ph-light ph-info text-2xl text-primary"></i>';
+                bgStyle = 'bg-secondary border-borderLight';
+            }
+
+            toast.className = `toast-enter ${bgStyle} px-5 py-4 shadow-[0_10px_40px_rgba(0,0,0,0.08)] border flex items-center gap-4 min-w-[300px] pointer-events-auto relative overflow-hidden`;
+            
+            toast.innerHTML = `
+                <div class="flex-shrink-0">${icon}</div>
+                <div class="font-bold text-[10px] uppercase tracking-widest text-primary flex-1 mt-0.5">${message}</div>
+                <button onclick="this.parentElement.remove()" class="text-textMuted hover:text-primary transition-colors">
+                    <i class="ph-light ph-x text-lg"></i>
+                </button>
+                <div class="absolute bottom-0 left-0 h-0.5 bg-accent w-full" style="animation: shrink 3s linear forwards;"></div>
+            `;
+            
+            // Add progress bar animation keyframes dynamically if not present
+            if(!document.getElementById('toast-styles')) {
+                const style = document.createElement('style');
+                style.id = 'toast-styles';
+                style.innerHTML = `@keyframes shrink { from { width: 100%; } to { width: 0%; } }`;
+                document.head.appendChild(style);
+            }
+
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.classList.remove('toast-enter');
+                    toast.classList.add('toast-exit');
+                    setTimeout(() => toast.remove(), 400); // Wait for exit animation
+                }
+            }, 3000);
+        }
+
+        // Custom Dropdown Filter
+        function toggleFilterDropdown() {
+            const dropdown = document.getElementById('filter-dropdown');
+            const caret = document.getElementById('filter-caret');
+            
+            dropdown.classList.toggle('active');
+            if(dropdown.classList.contains('active')) {
+                caret.style.transform = 'rotate(180deg)';
+            } else {
+                caret.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function filterByCategory(catValue, catText) {
+            currentFilter = catValue;
+            document.getElementById('filter-selected-text').textContent = catText;
+            toggleFilterDropdown();
+            renderProducts();
+        }
+
+        // Navigation
+        function showSection(sectionId) {
+            document.getElementById('home-section').style.display = 'none';
+            document.getElementById('shop-section').style.display = 'none';
+            document.getElementById('account-section').style.display = 'none';
+
+            if (sectionId === 'home') document.getElementById('home-section').style.display = 'block';
+            if (sectionId === 'shop') {
+                document.getElementById('shop-section').style.display = 'block';
+                if(currentFilter === 'all') renderProducts(); // Ensure products render
+            }
+            if (sectionId === 'account') {
+                document.getElementById('account-section').style.display = 'block';
+                renderAccountSection();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- 4. SHOP & RENDER LOGIC ---
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = '';
+            
+            const filteredProducts = currentFilter === 'all' 
+                ? products 
+                : products.filter(p => p.category === currentFilter);
+
+            if (filteredProducts.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-20 text-textMuted font-light text-sm"><i class="ph-light ph-magnifying-glass text-4xl mb-4 opacity-50 block"></i>No styles found in this category.</div>';
+                return;
+            }
+
+            filteredProducts.forEach(product => {
+                const defaultSize = product.sizes[0];
+                
+                const card = `
+                    <div class="product-card group fade-in">
+                        <div class="relative bg-secondary overflow-hidden img-hover-zoom mb-5 cursor-pointer h-[420px]">
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover object-center">
+                            
+                            <!-- Quick Add Button (Appears on Hover) -->
+                            <div class="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 flex justify-center bg-gradient-to-t from-black/50 to-transparent">
+                                <button onclick="addToCart(${product.id}, '${defaultSize}')" class="bg-white text-primary hover:bg-primary hover:text-white border border-transparent px-6 py-3 text-[10px] uppercase tracking-widest font-bold transition-colors w-full shadow-lg">
+                                    + Add to Bag (₹${PRICE_CONSTANT})
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-[9px] text-textMuted uppercase tracking-widest mb-1.5 block font-bold">${product.category}</span>
+                            <h3 class="text-base font-serif text-primary mb-1.5">${product.name}</h3>
+                            <span class="text-sm font-bold text-accent tracking-wide">₹${PRICE_CONSTANT}</span>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        // --- 5. CART LOGIC ---
+        function toggleCart() {
+            const drawer = document.getElementById('cart-drawer');
+            const overlay = document.getElementById('cart-overlay');
+            isCartOpen = !isCartOpen;
+            
+            if (isCartOpen) {
+                overlay.classList.remove('hidden');
+                // Tiny delay to allow display:block to apply before animating opacity
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+                drawer.classList.remove('translate-x-full');
+                document.body.style.overflow = 'hidden';
+            } else {
+                overlay.classList.add('opacity-0');
+                drawer.classList.add('translate-x-full');
+                setTimeout(() => overlay.classList.add('hidden'), 500);
+                document.body.style.overflow = '';
+            }
+        }
+
+        function addToCart(productId, size) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingItem = cart.find(item => item.id === productId && item.size === size);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1, size: size });
+            }
+
+            updateCartUI();
+            saveCart();
+            showToast(`${product.name} added to bag`, 'success');
+        }
+
+        function updateQuantity(productId, size, change) {
+            const item = cart.find(item => item.id === productId && item.size === size);
+            if (!item) return;
+
+            item.quantity += change;
+            if (item.quantity <= 0) {
+                cart = cart.filter(i => !(i.id === productId && i.size === size));
+            }
+            updateCartUI();
+            saveCart();
+        }
+
+        function saveCart() { 
+            localStorage.setItem('hc_cart', JSON.stringify(cart)); 
+        }
+
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            const cartCount = document.getElementById('cart-count');
+            
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCount.classList.toggle('opacity-0', totalItems === 0);
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-textMuted space-y-4 pt-20">
+                        <i class="ph-light ph-shopping-bag text-5xl opacity-30"></i>
+                        <p class="font-light text-sm">Your exquisite bag is empty.</p>
+                        <button onclick="toggleCart(); showSection('shop');" class="mt-4 border-b border-primary text-primary pb-1 uppercase text-[10px] font-bold tracking-widest hover:text-accent hover:border-accent transition-colors">Continue Shopping</button>
+                    </div>`;
+                cartTotal.textContent = '₹0';
+                return;
+            }
+
+            let total = 0;
+            cartItemsContainer.innerHTML = '';
+            
+            cart.forEach(item => {
+                total += PRICE_CONSTANT * item.quantity;
+                cartItemsContainer.innerHTML += `
+                    <div class="flex items-center gap-5 bg-surface p-4 border border-borderLight shadow-sm">
+                        <img src="${item.image}" alt="${item.name}" class="w-20 h-28 object-cover bg-secondary">
+                        <div class="flex-1">
+                            <h4 class="font-serif text-primary text-sm mb-1">${item.name}</h4>
+                            <p class="text-[10px] text-textMuted uppercase tracking-widest mb-3 font-bold">Size: ${item.size}</p>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center border border-borderLight bg-secondary">
+                                    <button onclick="updateQuantity(${item.id}, '${item.size}', -1)" class="w-8 h-8 flex items-center justify-center hover:bg-borderLight transition-colors text-lg font-light">-</button>
+                                    <span class="w-8 text-center text-xs font-bold">${item.quantity}</span>
+                                    <button onclick="updateQuantity(${item.id}, '${item.size}', 1)" class="w-8 h-8 flex items-center justify-center hover:bg-borderLight transition-colors text-lg font-light">+</button>
+                                </div>
+                                <div class="text-right flex flex-col items-end">
+                                    <div class="text-sm font-bold text-primary mb-1">₹${PRICE_CONSTANT * item.quantity}</div>
+                                    <button onclick="updateQuantity(${item.id}, '${item.size}', -${item.quantity})" class="text-[10px] uppercase tracking-widest text-textMuted hover:text-red-500 underline underline-offset-4 mt-1 transition-colors">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            cartTotal.textContent = `₹${total}`;
+        }
+
+        // --- 6. AUTHENTICATION & ACCOUNT LOGIC ---
+        
+        // OTP Inputs behavior (auto-advance)
+        document.querySelectorAll('.otp-input').forEach((input, index, inputs) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < inputs.length - 1) inputs[index + 1].focus();
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) inputs[index - 1].focus();
+            });
+        });
+
+        function requestOTP() {
+            const phone = document.getElementById('auth-phone').value;
+            if(phone.length < 10) { 
+                showToast("Please enter a valid 10-digit number.", "error"); 
+                return; 
+            }
+            
+            document.getElementById('step-phone').classList.add('hidden');
+            document.getElementById('step-otp').classList.remove('hidden');
+            document.querySelectorAll('.otp-input')[0].focus();
+            showToast("Access code sent to your device.", "info");
+        }
+
+        function resetAuth() {
+            document.getElementById('step-otp').classList.add('hidden');
+            document.getElementById('step-phone').classList.remove('hidden');
+            document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const phone = document.getElementById('auth-phone').value;
+            
+            // Check if user exists in local storage
+            const savedUser = localStorage.getItem(`hc_user_${phone}`);
+            if(savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showToast("Welcome back!", "success");
+            } else {
+                // Create new user profile
+                currentUser = { phone: phone, name: '', address: '', city: '', zip: '', orders: [] };
+                showToast("Account successfully created.", "success");
+                saveUserToStorage();
+            }
+
+            localStorage.setItem('hc_user', JSON.stringify(currentUser));
+            updateAuthUI();
+            renderAccountSection();
+        }
+
+        function saveUserToStorage() {
+            if(!currentUser) return;
+            localStorage.setItem(`hc_user_${currentUser.phone}`, JSON.stringify(currentUser));
+            localStorage.setItem('hc_user', JSON.stringify(currentUser));
+        }
+
+        function updateAuthUI() {
+            const navName = document.getElementById('nav-user-name');
+            if (currentUser) {
+                navName.textContent = currentUser.name ? currentUser.name.split(' ')[0] : 'Account';
+                navName.classList.add('text-accent');
+            } else {
+                navName.textContent = 'Sign In';
+                navName.classList.remove('text-accent');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('hc_user');
+            updateAuthUI();
+            renderAccountSection();
+            showToast("You have securely signed out.", "info");
+            resetAuth();
+            showSection('home');
+        }
+
+        function renderAccountSection() {
+            const authContainer = document.getElementById('auth-container');
+            const profileContainer = document.getElementById('profile-container');
+
+            if (currentUser) {
+                authContainer.classList.add('hidden');
+                profileContainer.classList.remove('hidden');
+                
+                document.getElementById('profile-welcome').textContent = currentUser.name ? `Welcome back, ${currentUser.name}.` : `Welcome, +91 ${currentUser.phone}`;
+                
+                // Populate forms
+                document.getElementById('prof-name').value = currentUser.name || '';
+                document.getElementById('prof-phone').value = `+91 ${currentUser.phone}`;
+                document.getElementById('prof-address').value = currentUser.address || '';
+                document.getElementById('prof-city').value = currentUser.city || '';
+                document.getElementById('prof-zip').value = currentUser.zip || '';
+
+                renderOrders();
+                switchProfileTab('orders'); // Default to orders
+            } else {
+                authContainer.classList.remove('hidden');
+                profileContainer.classList.add('hidden');
+            }
+        }
+
+        function switchProfileTab(tab) {
+            ['orders', 'details'].forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                btn.classList.remove('border-primary', 'bg-secondary', 'text-primary');
+                btn.classList.add('border-transparent', 'text-textMuted');
+                document.getElementById(`tab-content-${t}`).classList.add('hidden');
+            });
+
+            const activeBtn = document.getElementById(`tab-btn-${tab}`);
+            activeBtn.classList.remove('border-transparent', 'text-textMuted');
+            activeBtn.classList.add('border-primary', 'bg-secondary', 'text-primary');
+            document.getElementById(`tab-content-${tab}`).classList.remove('hidden');
+        }
+
+        function saveProfile(e) {
+            e.preventDefault();
+            if(!currentUser) return;
+
+            currentUser.name = document.getElementById('prof-name').value;
+            currentUser.address = document.getElementById('prof-address').value;
+            currentUser.city = document.getElementById('prof-city').value;
+            currentUser.zip = document.getElementById('prof-zip').value;
+
+            saveUserToStorage();
+            renderAccountSection(); 
+            updateAuthUI(); 
+            showToast("Delivery details securely saved.", "success");
+        }
+
+        // --- 7. CHECKOUT & ORDERS LOGIC ---
+        function processCheckout() {
+            if (cart.length === 0) {
+                showToast("Your shopping bag is empty.", "error");
+                return;
+            }
+
+            if (!currentUser) {
+                toggleCart();
+                showSection('account');
+                showToast("Please sign in to complete your purchase.", "info");
+                return;
+            }
+
+            if (!currentUser.address || !currentUser.city || !currentUser.name) {
+                toggleCart();
+                showSection('account');
+                switchProfileTab('details');
+                showToast("Please complete your delivery details first.", "info");
+                return;
+            }
+
+            // Generate Mock Order
+            const total = cart.reduce((sum, item) => sum + PRICE_CONSTANT * item.quantity, 0);
+            const newOrder = {
+                id: 'HC-' + Math.floor(100000 + Math.random() * 900000),
+                date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+                status: 'Processing',
+                total: total,
+                items: [...cart]
+            };
+
+            // Prepend to orders array
+            currentUser.orders = currentUser.orders || [];
+            currentUser.orders.unshift(newOrder); 
+            saveUserToStorage();
+
+            // Clear Cart
+            cart = [];
+            saveCart();
+            updateCartUI();
+            toggleCart();
+
+            showToast("Order Placed Successfully!", "success");
+            showSection('account');
+            switchProfileTab('orders');
+        }
+
+        function renderOrders() {
+            const list = document.getElementById('orders-list');
+            const noMsg = document.getElementById('no-orders-msg');
+            
+            if (!currentUser.orders || currentUser.orders.length === 0) {
+                noMsg.style.display = 'block';
+                Array.from(list.children).forEach(child => { if(child.id !== 'no-orders-msg') child.remove(); });
+                return;
+            }
+
+            noMsg.style.display = 'none';
+            Array.from(list.children).forEach(child => { if(child.id !== 'no-orders-msg') child.remove(); });
+
+            currentUser.orders.forEach(order => {
+                let itemsHtml = order.items.map(item => `
+                    <div class="flex justify-between items-center py-3 border-b border-borderLight last:border-0">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-textMuted font-bold">${item.quantity}x</span>
+                            <span class="text-sm text-primary font-serif">${item.name} <span class="text-[10px] uppercase font-sans text-textMuted tracking-widest ml-1">(${item.size})</span></span>
+                        </div>
+                        <span class="font-bold text-sm text-primary">₹${PRICE_CONSTANT * item.quantity}</span>
+                    </div>
+                `).join('');
+
+                const card = `
+                    <div class="border border-borderLight bg-white shadow-sm overflow-hidden fade-in">
+                        <div class="flex flex-col sm:flex-row justify-between p-5 md:p-6 bg-secondary border-b border-borderLight gap-4">
+                            <div>
+                                <h4 class="font-bold text-primary tracking-widest uppercase text-xs mb-1">Order #${order.id}</h4>
+                                <span class="text-[10px] text-textMuted uppercase tracking-widest font-bold"><i class="ph-light ph-calendar-blank mr-1"></i> ${order.date}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="px-3 py-1.5 bg-white border border-accent text-accent text-[9px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-sm">
+                                    <i class="ph-light ph-spinner-gap animate-spin text-sm"></i> ${order.status}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="p-5 md:p-6">
+                            ${itemsHtml}
+                        </div>
+                        
+                        <div class="flex justify-between items-center p-5 md:p-6 bg-secondary/50 border-t border-borderLight">
+                            <span class="text-[10px] uppercase tracking-widest text-textMuted font-bold">Total Paid</span>
+                            <span class="text-xl font-serif font-bold text-primary">₹${order.total}</span>
+                        </div>
+                    </div>
+                `;
+                list.insertAdjacentHTML('beforeend', card);
+            });
+        }
+    </script>
+</body>
+</html>
