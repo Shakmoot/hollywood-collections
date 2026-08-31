@@ -380,6 +380,59 @@
             </div>
         </section>
 
+        <!-- 10. ADMIN DASHBOARD (Hidden Route) -->
+        <section id="view-admin" class="view-section container section-padding">
+            <!-- Login Overlay -->
+            <div id="admin-login" style="max-width: 400px; margin: 0 auto; text-align: center;">
+                <i class="ph ph-lock-key" style="font-size: 4rem; color: var(--gold); margin-bottom: 20px;"></i>
+                <h2 style="margin-bottom: 20px;">Admin Access</h2>
+                <input type="password" id="admin-pwd" placeholder="Enter Password" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid var(--border); font-family: var(--font-body); outline: none;">
+                <button class="btn btn-primary w-100" onclick="verifyAdmin()">Login to Dashboard</button>
+                <p style="font-size: 0.8rem; color: var(--text-light); margin-top: 15px;">Hint: password is hollywoodadmin</p>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="admin-dashboard" style="display: none;">
+                <h1 class="page-title">Admin Dashboard</h1>
+                <div class="cart-layout">
+                    <div>
+                        <h3 style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">Manage Products</h3>
+                        <div id="admin-product-list"></div>
+                    </div>
+                    <div>
+                        <div class="cart-summary">
+                            <h3 id="admin-form-title" style="margin-bottom: 20px;">Add New Product</h3>
+                            <input type="hidden" id="admin-prod-id">
+                            
+                            <label style="font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; display: block;">Product Name</label>
+                            <input type="text" id="admin-name" style="width:100%; padding:10px; margin-bottom:15px; border: 1px solid var(--border); outline: none;">
+                            
+                            <label style="font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; display: block;">Price (₹)</label>
+                            <input type="number" id="admin-price" value="500" style="width:100%; padding:10px; margin-bottom:15px; border: 1px solid var(--border); outline: none;">
+                            
+                            <label style="font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; display: block;">Category</label>
+                            <select id="admin-category" style="width:100%; padding:10px; margin-bottom:15px; border: 1px solid var(--border); outline: none; font-family: var(--font-body); background: transparent;">
+                                <option>Dresses</option>
+                                <option>Kurtis</option>
+                                <option>Co-ords</option>
+                            </select>
+                            
+                            <label style="font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; display: block;">Description</label>
+                            <textarea id="admin-desc" style="width:100%; padding:10px; margin-bottom:15px; border: 1px solid var(--border); outline: none; font-family: var(--font-body); min-height: 80px;"></textarea>
+                            
+                            <label style="font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; display: block;">Image Upload</label>
+                            <input type="file" id="admin-img" accept="image/*" style="width:100%; padding:10px; margin-bottom:5px; border: 1px solid var(--border); outline: none; background: #fff;">
+                            <small style="color:var(--text-light); display:block; margin-bottom:15px; font-size: 0.75rem;">Uploads are saved to local browser storage.</small>
+                            <img id="admin-img-preview" style="width: 100%; max-height: 200px; object-fit: contain; display: none; margin-bottom: 15px; background: #f9f9f9; border: 1px solid var(--border);">
+                            
+                            <button class="btn btn-gold w-100" onclick="saveProduct()">Save Product</button>
+                            <button class="btn btn-outline w-100" onclick="resetAdminForm()" style="margin-top: 10px; display:none;" id="admin-cancel-btn">Cancel Edit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- FOOTER -->
@@ -432,6 +485,7 @@
         let selectedSize = null;
         let selectedPayment = 'sib'; // default
         let tempOrderTotal = 0;
+        let tempImgBase64 = ""; // Admin image storage
 
         // --- ROUTING SYSTEM ---
         function navigateTo(viewId) {
@@ -451,9 +505,17 @@
                 if(viewId === 'home' || viewId === 'shop') renderProducts(viewId);
                 if(viewId === 'cart') renderCart();
                 if(viewId === 'account') renderAccount();
+                if(viewId === 'admin' && document.getElementById('admin-dashboard').style.display === 'block') {
+                    renderAdminProducts();
+                }
             }
             if(window.innerWidth <= 768) document.getElementById('nav-links').classList.remove('show');
         }
+
+        // Listen for #admin in URL
+        window.addEventListener('hashchange', () => {
+            if(window.location.hash === '#admin') navigateTo('admin');
+        });
 
         // --- CORE UI ---
         function showToast(msg, type='info') {
@@ -751,13 +813,144 @@
             }
         }
 
+        // --- ADMIN SYSTEM ---
+        function verifyAdmin() {
+            if(document.getElementById('admin-pwd').value === 'hollywoodadmin') {
+                document.getElementById('admin-login').style.display = 'none';
+                document.getElementById('admin-dashboard').style.display = 'block';
+                renderAdminProducts();
+            } else {
+                showToast('Incorrect password', 'error');
+            }
+        }
+
+        // Image upload to Base64
+        document.getElementById('admin-img').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    tempImgBase64 = evt.target.result;
+                    document.getElementById('admin-img-preview').src = tempImgBase64;
+                    document.getElementById('admin-img-preview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function renderAdminProducts() {
+            const container = document.getElementById('admin-product-list');
+            container.innerHTML = products.map(p => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding: 15px; border: 1px solid var(--border); margin-bottom: 10px; background: #fff;">
+                    <div style="display:flex; gap: 15px; align-items:center;">
+                        <img src="${p.img}" style="width: 60px; height: 80px; object-fit: cover; border: 1px solid var(--border);">
+                        <div>
+                            <strong style="font-size: 1.1rem;">${p.name}</strong><br>
+                            <span style="color:var(--gold); font-weight: bold;">₹${p.price}</span> | <span style="color:var(--text-light);">${p.category || 'Dress'}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-outline" style="padding: 8px 15px;" onclick="editProduct(${p.id})">Edit</button>
+                        <button class="btn-primary" style="padding: 8px 15px; background:#e74c3c; border-color:#e74c3c;" onclick="deleteProduct(${p.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function saveProduct() {
+            const id = document.getElementById('admin-prod-id').value;
+            const name = document.getElementById('admin-name').value;
+            const price = document.getElementById('admin-price').value;
+            const cat = document.getElementById('admin-category').value;
+            const desc = document.getElementById('admin-desc').value;
+
+            if(!name || !price) return showToast('Name and price are required', 'error');
+
+            const prodData = {
+                id: id ? parseInt(id) : Date.now(),
+                name,
+                price: parseInt(price),
+                category: cat,
+                desc: desc || "Premium fashion wear.",
+                sizes: ["S", "M", "L", "XL"],
+                img: tempImgBase64 || "https://images.unsplash.com/photo-1515347619152-c6bf2e99d251?q=80&w=800"
+            };
+
+            if(id) {
+                const index = products.findIndex(p => p.id === parseInt(id));
+                if(index > -1) {
+                    if(!tempImgBase64) prodData.img = products[index].img; // Keep old image
+                    products[index] = prodData;
+                }
+            } else {
+                products.push(prodData);
+            }
+
+            try {
+                localStorage.setItem('hc_products', JSON.stringify(products));
+                showToast('Product saved successfully!', 'success');
+                resetAdminForm();
+                renderAdminProducts();
+                renderProducts('shop'); // Update shop view in background
+                renderProducts('home');
+            } catch(e) {
+                showToast('Browser storage full! Image is too large.', 'error');
+            }
+        }
+
+        function editProduct(id) {
+            const p = products.find(x => x.id === id);
+            if(!p) return;
+            document.getElementById('admin-prod-id').value = p.id;
+            document.getElementById('admin-name').value = p.name;
+            document.getElementById('admin-price').value = p.price;
+            document.getElementById('admin-category').value = p.category || 'Dresses';
+            document.getElementById('admin-desc').value = p.desc || "";
+            document.getElementById('admin-img-preview').src = p.img;
+            document.getElementById('admin-img-preview').style.display = 'block';
+            tempImgBase64 = ""; // Reset temp so we don't accidentally overwrite with old base64
+            
+            document.getElementById('admin-form-title').innerText = "Edit Product";
+            document.getElementById('admin-cancel-btn').style.display = 'block';
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function deleteProduct(id) {
+            if(confirm("Are you sure you want to delete this product?")) {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('hc_products', JSON.stringify(products));
+                renderAdminProducts();
+                renderProducts('shop');
+                renderProducts('home');
+                showToast('Product deleted.', 'info');
+            }
+        }
+
+        function resetAdminForm() {
+            document.getElementById('admin-prod-id').value = "";
+            document.getElementById('admin-name').value = "";
+            document.getElementById('admin-price').value = "500";
+            document.getElementById('admin-desc').value = "";
+            document.getElementById('admin-img').value = "";
+            document.getElementById('admin-img-preview').style.display = 'none';
+            tempImgBase64 = "";
+            document.getElementById('admin-form-title').innerText = "Add New Product";
+            document.getElementById('admin-cancel-btn').style.display = 'none';
+        }
+
         // --- INITIALIZATION ---
         (function initApp() {
             if(!localStorage.getItem('hc_products')) {
                 localStorage.setItem('hc_products', JSON.stringify(defaultProducts));
             }
             updateCartIcon();
-            renderProducts('home');
+            
+            // Check if user came via a direct link to the admin panel
+            if(window.location.hash === '#admin') {
+                navigateTo('admin');
+            } else {
+                renderProducts('home');
+            }
         })();
 
     </script>
