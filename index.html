@@ -1538,4 +1538,509 @@
         }
     </script>
 </body>
+
+<!-- ... existing code ... -->
+        <div id="footer-container"></div>
+    </main>
+
+    <script>
+        // ==========================================
+        // 1. DATA & STATE (CLOUD-FREE LOCAL VERSION)
+        // ==========================================
+        
+        // For Cloudflare Pages, your permanent inventory lives here. 
+        // Add new products here, upload to GitHub, and Cloudflare updates instantly!
+        const defaultProducts = [
+            { id: 1, name: "Classic Floral Dress", category: "Dresses", price: 500, images: ["https://images.unsplash.com/photo-1515347619152-c6bf2e99d251?q=80&w=1000"], description: "Elegant floral dress perfect for summer outings.", sizes: ["S", "M", "L", "XL"], available: true, featured: true },
+            { id: 2, name: "Elegant Printed Kurti", category: "Kurtis", price: 500, images: ["https://images.unsplash.com/photo-1583391733958-d15a883fa50b?q=80&w=1000"], description: "Beautiful printed kurti blending traditional aesthetics with modern comfort.", sizes: ["M", "L", "XL", "XXL"], available: true, featured: true },
+            { id: 3, name: "Premium Co-ord Set", category: "Co-ords", price: 500, images: ["https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000"], description: "Chic co-ord set designed for the modern fashion-forward woman.", sizes: ["XS", "S", "M"], available: true, featured: true },
+            { id: 4, name: "Minimal Party Dress", category: "Party Wear", price: 500, images: ["https://images.unsplash.com/photo-1566206091558-7f218b696731?q=80&w=1000"], description: "Turn heads at any event with this stunning minimal party dress.", sizes: ["S", "M", "L"], available: true, featured: true }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('hc_products')) || defaultProducts;
+        let cart = JSON.parse(localStorage.getItem('hc_cart')) || [];
+        let accountDetails = JSON.parse(localStorage.getItem('hc_account')) || null;
+        let orders = JSON.parse(localStorage.getItem('hc_orders')) || [];
+        let uploadedImageURL = '';
+
+        
+        // -----------------------
+        // NAVIGATION & ROUTING
+        // -----------------------
+        function handleRoute() {
+            const hash = window.location.hash || '#home';
+            document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+            
+            // Hide custom filter if not on shop page
+            const filterDropdown = document.getElementById('custom-filter-dropdown');
+            if (filterDropdown) filterDropdown.style.display = hash === '#shop' ? 'block' : 'none';
+
+            window.scrollTo(0, 0);
+
+            try {
+                if (hash === '#home') renderHome();
+                else if (hash === '#shop') renderShop();
+                else if (hash.startsWith('#product-')) renderProductPage(parseInt(hash.replace('#product-', '')));
+                else if (hash === '#cart') renderCartPage();
+                else if (hash === '#checkout') renderCheckoutPage();
+                else if (hash === '#account') renderAccountPage();
+                else if (hash === '#admin') renderAdminPage();
+            } catch (e) {
+                console.error("Routing error:", e);
+                renderHome(); // Fallback
+            }
+        }
+
+        window.addEventListener('hashchange', handleRoute);
+        
+        // -----------------------
+        // UI & HELPERS
+        // -----------------------
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            
+            toast.style.background = type === 'success' ? '#B8975A' : (type === 'error' ? '#ef4444' : '#111');
+            toast.style.color = '#fff';
+            
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.qty, 0);
+            const counters = document.querySelectorAll('.cart-count');
+            counters.forEach(c => c.innerText = count);
+        }
+
+        // -----------------------
+        // RENDERING FUNCTIONS
+        // -----------------------
+        function renderHome() {
+            document.getElementById('home-page').classList.remove('hidden');
+            const featuredContainer = document.getElementById('featured-grid');
+            const featured = products.filter(p => p.featured).slice(0, 4);
+            
+            if(featured.length === 0) {
+                featuredContainer.innerHTML = '<p class="text-center" style="grid-column: 1/-1;">No featured products available.</p>';
+                return;
+            }
+
+            featuredContainer.innerHTML = featured.map(p => `
+                <div class="product-card fade-in" onclick="window.location.hash = '#product-${p.id}'">
+                    <div class="product-img">
+                        <img src="${p.images[0]}" alt="${p.name}" onerror="this.src='https://placehold.co/400x500/f4f4f4/333?text=Image+Missing'">
+                    </div>
+                    <div class="product-info">
+                        <h4>${p.name}</h4>
+                        <p class="price">₹${p.price}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        
+        function renderShop(filterCategory = 'All') {
+            document.getElementById('shop-page').classList.remove('hidden');
+            const container = document.getElementById('shop-grid');
+            
+            let displayProducts = filterCategory === 'All' ? products : products.filter(p => p.category === filterCategory);
+            
+            if(displayProducts.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding: 40px;">No products found in this category.</p>';
+                return;
+            }
+
+            container.innerHTML = displayProducts.map(p => `
+                <div class="product-card fade-in" onclick="window.location.hash = '#product-${p.id}'">
+                    <div class="product-img">
+                        <img src="${p.images[0]}" alt="${p.name}" onerror="this.src='https://placehold.co/400x500/f4f4f4/333?text=Image+Missing'">
+                    </div>
+                    <div class="product-info">
+                        <h4>${p.name}</h4>
+                        <p class="price">₹${p.price}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Setup Custom Filter Dropdown
+        document.querySelectorAll('.filter-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const cat = e.target.dataset.value;
+                document.getElementById('current-filter-text').innerText = cat;
+                renderShop(cat);
+                
+                // Hide dropdown after selection
+                const dropdown = document.querySelector('.dropdown-content');
+                dropdown.style.display = 'none';
+                setTimeout(() => dropdown.style.display = '', 100); 
+            });
+        });
+
+        function renderProductPage(id) {
+            document.getElementById('product-page').classList.remove('hidden');
+            const product = products.find(p => p.id === id);
+            
+            if (!product) {
+                window.location.hash = '#shop';
+                return;
+            }
+
+            document.getElementById('prod-main-img').src = product.images[0];
+            document.getElementById('prod-name').innerText = product.name;
+            document.getElementById('prod-price').innerText = `₹${product.price}`;
+            document.getElementById('prod-desc').innerText = product.description;
+            
+            const sizeContainer = document.getElementById('prod-sizes');
+            sizeContainer.innerHTML = product.sizes.map(s => `
+                <button class="size-btn" onclick="selectSize(this, '${s}')">${s}</button>
+            `).join('');
+            
+            // Reset state
+            document.getElementById('qty-input').value = 1;
+            window.selectedSize = null;
+            window.currentProduct = product;
+        }
+
+        function selectSize(btn, size) {
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            window.selectedSize = size;
+        }
+
+        function changeQty(amt) {
+            const input = document.getElementById('qty-input');
+            let val = parseInt(input.value) + amt;
+            if(val < 1) val = 1;
+            input.value = val;
+        }
+
+        document.getElementById('add-to-cart-btn').addEventListener('click', () => {
+            if(!window.selectedSize) {
+                showToast("Please select a size first", "error");
+                return;
+            }
+            const qty = parseInt(document.getElementById('qty-input').value);
+            
+            const existing = cart.find(i => i.id === window.currentProduct.id && i.size === window.selectedSize);
+            if(existing) {
+                existing.qty += qty;
+            } else {
+                cart.push({...window.currentProduct, size: window.selectedSize, qty});
+            }
+            
+            localStorage.setItem('hc_cart', JSON.stringify(cart));
+            updateCartCount();
+            showToast("Added to cart!", "success");
+        });
+
+        
+        function renderCartPage() {
+            document.getElementById('cart-page').classList.remove('hidden');
+            const container = document.getElementById('cart-items-container');
+            
+            if(cart.length === 0) {
+                container.innerHTML = '<p>Your cart is empty.</p><button onclick="window.location.hash=\'#shop\'" class="btn btn-primary" style="margin-top:20px;">Continue Shopping</button>';
+                document.getElementById('cart-subtotal').innerText = '₹0';
+                document.getElementById('cart-total').innerText = '₹0';
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = cart.map((item, index) => {
+                total += (item.price * item.qty);
+                return `
+                    <div class="cart-item fade-in">
+                        <img src="${item.images[0]}" alt="${item.name}">
+                        <div style="flex-grow:1;">
+                            <h4>${item.name}</h4>
+                            <p style="color:#666; font-size:0.9rem;">Size: ${item.size}</p>
+                            <p class="price" style="margin-top:10px;">₹${item.price}</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <p>Qty: ${item.qty}</p>
+                            <button onclick="removeFromCart(${index})" style="background:none; border:none; color:#ef4444; margin-top:10px; cursor:pointer; font-weight:600;"><i class="ph ph-trash"></i> Remove</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('cart-subtotal').innerText = `₹${total}`;
+            document.getElementById('cart-total').innerText = `₹${total}`;
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            localStorage.setItem('hc_cart', JSON.stringify(cart));
+            renderCartPage();
+            updateCartCount();
+            showToast("Item removed from cart");
+        }
+
+        function renderCheckoutPage() {
+            document.getElementById('checkout-page').classList.remove('hidden');
+            if(cart.length === 0) {
+                window.location.hash = '#cart';
+                return;
+            }
+
+            if(!accountDetails) {
+                showToast("Please save your delivery address in your account first.", "error");
+                setTimeout(() => window.location.hash = '#account', 1500);
+                return;
+            }
+
+            // Fill address info
+            document.getElementById('checkout-address-info').innerHTML = `
+                <p><strong>${accountDetails.name}</strong> (${accountDetails.phone})</p>
+                <p>${accountDetails.address}</p>
+                <button class="btn btn-secondary" style="padding: 5px 15px; margin-top:10px; font-size:0.8rem;" onclick="window.location.hash='#account'">Edit Address</button>
+            `;
+
+            // Render summary
+            let total = 0;
+            const itemsHtml = cart.map(item => {
+                total += (item.price * item.qty);
+                return `<div class="summary-line" style="font-size:0.9rem;">
+                    <span>${item.name} (${item.size}) x ${item.qty}</span>
+                    <span>₹${item.price * item.qty}</span>
+                </div>`;
+            }).join('');
+            
+            document.getElementById('checkout-items').innerHTML = itemsHtml;
+            document.getElementById('checkout-total').innerText = `₹${total}`;
+            window.checkoutTotal = total;
+        }
+
+        document.getElementById('confirm-order-btn').addEventListener('click', () => {
+            const paymentMethod = document.getElementById('payment-method').value;
+            
+            if(!paymentMethod) {
+                showToast("Please select a payment method", "error");
+                return;
+            }
+
+            const newOrder = {
+                id: 'HC-' + Math.floor(100000 + Math.random() * 900000),
+                date: new Date().toLocaleDateString(),
+                items: cart,
+                total: window.checkoutTotal,
+                status: 'Processing',
+                payment: paymentMethod
+            };
+
+            orders.unshift(newOrder);
+            localStorage.setItem('hc_orders', JSON.stringify(orders));
+            
+            // Clear cart
+            cart = [];
+            localStorage.setItem('hc_cart', JSON.stringify([]));
+            updateCartCount();
+
+            // Show success
+            document.getElementById('checkout-page').classList.add('hidden');
+            document.getElementById('order-success-page').classList.remove('hidden');
+            document.getElementById('order-id-display').innerText = newOrder.id;
+        });
+
+        
+        function renderAccountPage() {
+            document.getElementById('account-page').classList.remove('hidden');
+            
+            if(accountDetails) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                
+                document.getElementById('acc-name').value = accountDetails.name || '';
+                document.getElementById('acc-phone').value = accountDetails.phone || '';
+                document.getElementById('acc-address').value = accountDetails.address || '';
+                
+                // Render Orders
+                const orderContainer = document.getElementById('order-history');
+                if(orders.length === 0) {
+                    orderContainer.innerHTML = '<p>No previous orders found.</p>';
+                } else {
+                    orderContainer.innerHTML = orders.map(o => `
+                        <div class="cart-item fade-in" style="flex-direction:column; align-items:flex-start;">
+                            <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:10px;">
+                                <strong>Order #${o.id}</strong>
+                                <span style="background:var(--accent-color); color:#fff; padding:2px 8px; border-radius:12px; font-size:0.8rem;">${o.status}</span>
+                            </div>
+                            <p style="font-size:0.9rem; color:#666;">Date: ${o.date} | Payment: ${o.payment}</p>
+                            <p style="font-size:0.9rem; margin-top:5px;">Total: <strong>₹${o.total}</strong></p>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                document.getElementById('login-section').classList.remove('hidden');
+                document.getElementById('dashboard-section').classList.add('hidden');
+            }
+        }
+
+        document.getElementById('login-btn').addEventListener('click', () => {
+            const phone = document.getElementById('login-phone').value;
+            if(phone.length < 10) {
+                showToast("Please enter a valid phone number", "error");
+                return;
+            }
+            showToast("OTP Verified Successfully!", "success");
+            accountDetails = { phone: phone, name: '', address: '' };
+            localStorage.setItem('hc_account', JSON.stringify(accountDetails));
+            renderAccountPage();
+        });
+
+        document.getElementById('save-address-btn').addEventListener('click', () => {
+            accountDetails = {
+                phone: document.getElementById('acc-phone').value,
+                name: document.getElementById('acc-name').value,
+                address: document.getElementById('acc-address').value
+            };
+            localStorage.setItem('hc_account', JSON.stringify(accountDetails));
+            showToast("Profile updated successfully!", "success");
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            accountDetails = null;
+            localStorage.removeItem('hc_account');
+            renderAccountPage();
+            showToast("Logged out successfully");
+        });
+
+        
+        function renderAdminPage() {
+            document.getElementById('admin-page').classList.remove('hidden');
+            
+            if(sessionStorage.getItem('admin_auth') !== 'true') {
+                const pass = prompt("Enter Admin Password (hint: hollywoodadmin)");
+                if(pass !== 'hollywoodadmin') {
+                    window.location.hash = '#home';
+                    return;
+                }
+                sessionStorage.setItem('admin_auth', 'true');
+            }
+            renderAdminProducts();
+        }
+
+        function renderAdminProducts() {
+            const container = document.getElementById('admin-products-list');
+            container.innerHTML = products.map(p => `
+                <div class="cart-item">
+                    <img src="${p.images[0]}" alt="${p.name}" style="width:60px; height:80px;">
+                    <div style="flex-grow:1;">
+                        <h4 style="font-size:1rem;">${p.name}</h4>
+                        <p style="color:#666; font-size:0.8rem;">${p.category} | ₹${p.price}</p>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="editProduct(${p.id})" class="btn btn-secondary" style="padding: 5px 10px; font-size:0.8rem;"><i class="ph ph-pencil"></i></button>
+                        <button onclick="deleteProduct(${p.id})" class="btn btn-primary" style="padding: 5px 10px; font-size:0.8rem; background:#ef4444; border-color:#ef4444;"><i class="ph ph-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // NO COMPRESSION UPLOAD - Keeps High Quality for local testing
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageURL = e.target.result; 
+                    document.getElementById('image-preview').src = uploadedImageURL;
+                    document.getElementById('image-preview-container').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function saveProduct(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('prod-name-input').value;
+            const cat = document.getElementById('prod-cat-input').value;
+            const desc = document.getElementById('prod-desc-input').value;
+            const sizes = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+            
+            if(!uploadedImageURL) {
+                showToast("Please upload an image", "error"); return;
+            }
+            if(sizes.length === 0) {
+                showToast("Please select at least one size", "error"); return;
+            }
+
+            const editId = document.getElementById('edit-id').value;
+            const newProduct = {
+                id: editId ? parseInt(editId) : Date.now(),
+                name: name, category: cat, price: 500, description: desc, sizes: sizes, images: [uploadedImageURL], available: true, featured: true
+            };
+
+            if (editId) {
+                const index = products.findIndex(p => p.id === parseInt(editId));
+                if(index !== -1) products[index] = newProduct;
+            } else {
+                products.unshift(newProduct);
+            }
+
+            try {
+                // Try to save to browser's Local Storage
+                localStorage.setItem('hc_products', JSON.stringify(products));
+                
+                document.getElementById('admin-form').reset();
+                uploadedImageURL = '';
+                document.getElementById('image-preview-container').classList.add('hidden');
+                document.getElementById('edit-id').value = '';
+                document.getElementById('admin-submit-btn').innerText = 'Publish Product';
+                
+                renderAdminProducts();
+                showToast("Product saved locally!", "success");
+            } catch (error) {
+                // If the high-res image is too big for the browser, tell the user!
+                if(error.name === 'QuotaExceededError') {
+                    showToast("Error: Image too large! Browser storage is full. Please use links or resize the image.", "error");
+                    if(!editId) products.shift(); // Undo the add
+                } else {
+                    showToast("Error saving product.", "error");
+                }
+            }
+        }
+
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if(!product) return;
+            
+            document.getElementById('prod-name-input').value = product.name;
+            document.getElementById('prod-cat-input').value = product.category;
+            document.getElementById('prod-desc-input').value = product.description;
+            document.getElementById('edit-id').value = product.id;
+            
+            uploadedImageURL = product.images[0];
+            document.getElementById('image-preview').src = uploadedImageURL;
+            document.getElementById('image-preview-container').classList.remove('hidden');
+            
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = product.sizes.includes(cb.value);
+            });
+            
+            document.getElementById('admin-submit-btn').innerText = 'Update Product';
+            window.scrollTo(0, 0);
+        }
+
+        function deleteProduct(id) {
+            if(!confirm("Are you sure you want to delete this product?")) return;
+            products = products.filter(p => p.id !== id);
+            try {
+                localStorage.setItem('hc_products', JSON.stringify(products));
+                renderAdminProducts();
+                showToast("Product deleted.", "info");
+            } catch (e) {
+                showToast("Error deleting product.", "error");
+            }
+        }
+
+        // Initialize application
+        updateCartCount();
+        handleRoute();
+
+    </script>
+</body>
 </html>
